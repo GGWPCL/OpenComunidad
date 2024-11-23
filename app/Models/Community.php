@@ -19,7 +19,13 @@ class Community extends Model
      */
     protected $fillable = [
         'name',
+        'slug',
     ];
+
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
 
     /**
      * Get the users that belong to the community.

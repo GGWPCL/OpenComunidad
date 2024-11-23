@@ -3,6 +3,7 @@ import { Head, router, usePage } from '@inertiajs/react';
 import { Card, CardContent } from '@/Components/ui/card';
 import { ScrollArea } from '@/Components/ui/scroll-area';
 import { Button } from '@/Components/ui/button';
+import { useState, useEffect } from 'react';
 
 interface Post {
     id: number;
@@ -15,45 +16,33 @@ interface Post {
     createdAt: string;
 }
 
-// Mock data - replace with real data from your backend
-const mockPosts: Post[] = [
-    {
-        id: 1,
-        title: "Propuesta: Instalación de cámaras de seguridad",
-        content: "Propongo instalar cámaras de seguridad en los accesos principales...",
-        category: "Propuestas",
-        author: "Juan Pérez",
-        votes: 15,
-        comments: 23,
-        createdAt: "2024-03-15"
-    },
-    {
-        id: 2,
-        title: "Encuesta: Horario de cierre de la piscina",
-        content: "¿Cuál creen que debería ser el horario de cierre de la piscina?",
-        category: "Encuestas",
-        author: "María González",
-        votes: 8,
-        comments: 12,
-        createdAt: "2024-03-14"
-    },
-    // Add more mock posts as needed
-];
+interface Category {
+    name: string;
+    internal_name: string;
+    icon: string;
+}
 
+interface Props {
+    community?: {
+        name: string
+    };
+    categories: Category[];
+    posts: Post[];
+}
 
-export default function Show({ community }: { community?: { name: string } }) {
-    const categories = [
-        { name: "Todo", internal_name: "all", icon: "📋" },
-        { name: "Propuestas", internal_name: "proposals", icon: "💡" },
-        { name: "Encuestas", internal_name: "polls", icon: "📊" },
-        { name: "Imagina", internal_name: "imagine", icon: "🎨" },
-    ];
+export default function Show({ community, categories, posts }: Props) {
+    const [currentCategory, setCurrentCategory] = useState<string | undefined>(
+        (usePage().props as { category?: string }).category
+    );
 
-    // Get current category from Inertia page props
-    const { category: currentCategory = 'all' } = usePage().props as { category?: string };
+    useEffect(() => {
+        const category = new URLSearchParams(window.location.search).get('category');
+        setCurrentCategory(category || undefined);
+    }, []);
 
-    const handleCategoryClick = (internal_name: string) => {
-        // Use Inertia's router to update the URL
+    const handleCategoryClick = (internal_name?: string) => {
+        setCurrentCategory(internal_name);
+
         router.get(
             route(route().current() ?? '', { ...route().params }),
             { category: internal_name },
@@ -79,15 +68,26 @@ export default function Show({ community }: { community?: { name: string } }) {
                             <Card>
                                 <ScrollArea className="h-[calc(100vh-12rem)]">
                                     <div className="p-4 space-y-2">
+                                        <Button
+                                            key={undefined}
+                                            variant="ghost"
+                                            className={`w-full justify-start ${!currentCategory
+                                                ? 'bg-primary/10 text-primary'
+                                                : ''
+                                                }`}
+                                            onClick={() => handleCategoryClick()}
+                                        >
+                                            <span className="mr-2">📋</span>
+                                            Todo
+                                        </Button>
                                         {categories.map((category) => (
                                             <Button
-                                                key={category.name}
+                                                key={category.internal_name}
                                                 variant="ghost"
-                                                className={`w-full justify-start ${
-                                                    category.internal_name === currentCategory
-                                                        ? 'bg-primary/10 text-primary'
-                                                        : ''
-                                                }`}
+                                                className={`w-full justify-start ${category.internal_name === currentCategory
+                                                    ? 'bg-primary/10 text-primary'
+                                                    : ''
+                                                    }`}
                                                 onClick={() => handleCategoryClick(category.internal_name)}
                                             >
                                                 <span className="mr-2">{category.icon}</span>
@@ -102,10 +102,10 @@ export default function Show({ community }: { community?: { name: string } }) {
                         {/* Main Content */}
                         <div className="flex-1 space-y-4">
                             <Button className="w-full">Crear nueva publicación</Button>
-                            
+
                             {/* Posts List */}
                             <div className="space-y-4">
-                                {mockPosts.map((post) => (
+                                {posts.map((post) => (
                                     <Card key={post.id} className="hover:shadow-md transition-shadow">
                                         <CardContent className="p-6">
                                             <div className="flex gap-4">
