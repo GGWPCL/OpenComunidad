@@ -1,5 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router, usePage } from '@inertiajs/react';
+import GuestLayout from '@/Layouts/GuestLayout';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Card, CardContent } from '@/Components/ui/card';
 import { ScrollArea } from '@/Components/ui/scroll-area';
 import { Button } from '@/Components/ui/button';
@@ -41,7 +42,7 @@ const mockPosts: Post[] = [
 ];
 
 
-export default function Show({ community }: { community?: { name: string } }) {
+export default function Show({ community, auth }: { community?: { name: string }, auth: { user: any } }) {
     const categories = [
         { name: "Todo", internal_name: "all", icon: "📋" },
         { name: "Propuestas", internal_name: "proposals", icon: "💡" },
@@ -61,8 +62,10 @@ export default function Show({ community }: { community?: { name: string } }) {
         );
     };
 
+    const Layout = auth.user ? AuthenticatedLayout : GuestLayout;
+    
     return (
-        <AuthenticatedLayout
+        <Layout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
                     {community?.name || "Comunidad"}
@@ -70,6 +73,17 @@ export default function Show({ community }: { community?: { name: string } }) {
             }
         >
             <Head title={`${community?.name || 'Comunidad'} - Open Comunidad`} />
+
+            {/* Guest warning banner */}
+            {!auth.user && (
+                <div className="bg-amber-50 border-b border-amber-100">
+                    <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
+                        <p className="text-sm text-amber-700">
+                            Estás viendo una versión limitada del contenido. Inicia sesión para ver todas las publicaciones y participar en la comunidad
+                        </p>
+                    </div>
+                </div>
+            )}
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -145,6 +159,6 @@ export default function Show({ community }: { community?: { name: string } }) {
                     </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </Layout>
     );
 }
