@@ -54,20 +54,21 @@ class CommunityController extends Controller
         $categories = Category::select('display_name as name', 'internal_name', 'icon', 'description')->get();
         $selectedCategory = request()->query('category');
 
+        $user = Auth::user();
+
         $postsQuery = Post::where('community_id', $community->id);
         if ($selectedCategory) {
-            $postsQuery
-                ->join('categories', 'posts.category_id', '=', 'categories.id')
-                ->where('categories.internal_name', $selectedCategory);
+            $postsQuery->whereHas('category', function ($query) use ($selectedCategory) {
+                $query->where('internal_name', $selectedCategory);
+            });
         }
 
-        $user = Auth::user();
         $posts = $postsQuery->get()
-            ->map(function ($post) use ($user) {
+            ->map(function (Post $post) use ($user) {
                 return [
                     'id' => $post->id,
-                    'title' => $post->title,
-                    'content' => $post->content,
+                    'title' => $post->mutated_title,
+                    'content' => $post->mutated_content,
                     'category' => $post->category?->display_name,
                     'author' => $post->author?->name,
                     'comments' => (int) $post->comments?->count(),
