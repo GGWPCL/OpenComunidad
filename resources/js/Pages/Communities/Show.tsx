@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { Card, CardContent } from '@/Components/ui/card';
 import { ScrollArea } from '@/Components/ui/scroll-area';
 import { Button } from '@/Components/ui/button';
@@ -43,11 +43,23 @@ const mockPosts: Post[] = [
 
 export default function Show({ community }: { community?: { name: string } }) {
     const categories = [
-        { name: "Todo", icon: "📋" },
-        { name: "Propuestas", icon: "💡" },
-        { name: "Encuestas", icon: "📊" },
-        { name: "Imagina", icon: "🎨" },
+        { name: "Todo", internal_name: "all", icon: "📋" },
+        { name: "Propuestas", internal_name: "proposals", icon: "💡" },
+        { name: "Encuestas", internal_name: "polls", icon: "📊" },
+        { name: "Imagina", internal_name: "imagine", icon: "🎨" },
     ];
+
+    // Get current category from Inertia page props
+    const { category: currentCategory = 'all' } = usePage().props as { category?: string };
+
+    const handleCategoryClick = (internal_name: string) => {
+        // Use Inertia's router to update the URL
+        router.get(
+            route(route().current() ?? '', { ...route().params }),
+            { category: internal_name },
+            { preserveState: true, preserveScroll: true, replace: true }
+        );
+    };
 
     return (
         <AuthenticatedLayout
@@ -71,7 +83,12 @@ export default function Show({ community }: { community?: { name: string } }) {
                                             <Button
                                                 key={category.name}
                                                 variant="ghost"
-                                                className="w-full justify-start"
+                                                className={`w-full justify-start ${
+                                                    category.internal_name === currentCategory
+                                                        ? 'bg-primary/10 text-primary'
+                                                        : ''
+                                                }`}
+                                                onClick={() => handleCategoryClick(category.internal_name)}
                                             >
                                                 <span className="mr-2">{category.icon}</span>
                                                 {category.name}

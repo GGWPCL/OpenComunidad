@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreCommunityRequest;
 use App\Http\Requests\UpdateCommunityRequest;
 use App\Models\Community;
+use Inertia\Inertia;
 
 class CommunityController extends Controller
 {
@@ -37,7 +38,11 @@ class CommunityController extends Controller
      */
     public function show(Community $community)
     {
-        //
+        return Inertia::render('Communities/Show', [
+            'community' => [
+                'name' => 'Switch 345'
+            ]
+        ]);
     }
 
     /**
