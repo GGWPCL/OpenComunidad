@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
 use App\Models\Post;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class PostController extends Controller
 {
@@ -62,5 +64,23 @@ class PostController extends Controller
     public function destroy(Post $post)
     {
         //
+    }
+
+    /**
+     * Follows the specified post.
+     */
+    public function follow(Post $post)
+    {
+        //
+
+        // $user = Auth::user();
+        // if (!$user instanceof User) {
+        //     return redirect()->route('login');
+        // }
+
+        // $user->followPost($post)
+        //     ->save();
+
+        return response()->json(null, 201);
     }
 }
