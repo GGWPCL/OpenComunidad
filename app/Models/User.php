@@ -67,11 +67,6 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    /**
-     * @param Post $post
-     * @param bool $shouldFollow
-     * @return Follow|null
-     */
     public function followPost(Post $post, bool $shouldFollow): ?Follow
     {
         if ($shouldFollow) {
@@ -119,5 +114,50 @@ class User extends Authenticatable
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class, 'author_id');
+    }
+
+    /**
+     * Get the posts that the user has upvoted.
+     */
+    public function upvotedPosts(): BelongsToMany
+    {
+        return $this->belongsToMany(Post::class, 'up_votes')
+            ->withTimestamps();
+    }
+
+    /**
+     * Upvote or remove upvote from a post
+     */
+    public function upvotePost(Post $post, bool $shouldUpvote): ?UpVote
+    {
+        if ($shouldUpvote) {
+            if ($this->upvotedPosts->contains($post)) {
+                return UpVote::where('user_id', $this->id)
+                    ->where('post_id', $post->id)
+                    ->first();
+            }
+
+            $upvote = UpVote::create([
+                'user_id' => $this->id,
+                'post_id' => $post->id
+            ]);
+
+            // Refresh the relationship
+            $this->load('upvotedPosts');
+
+            return $upvote;
+        }
+
+        if ($this->upvotedPosts->contains($post)) {
+            // Delete existing upvote relationship
+            UpVote::where('user_id', $this->id)
+                ->where('post_id', $post->id)
+                ->delete();
+
+            // Refresh the relationship
+            $this->load('upvotedPosts');
+        }
+
+        return null;
     }
 }
