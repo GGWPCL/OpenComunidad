@@ -68,6 +68,44 @@ class User extends Authenticatable
     }
 
     /**
+     * @param Post $post
+     * @param bool $shouldFollow
+     * @return Follow|null
+     */
+    public function followPost(Post $post, bool $shouldFollow): ?Follow
+    {
+        if ($shouldFollow) {
+            if ($this->followedPosts->contains($post)) {
+                return Follow::where('user_id', $this->id)
+                    ->where('post_id', $post->id)
+                    ->first();
+            }
+
+            $follow = Follow::create([
+                'user_id' => $this->id,
+                'post_id' => $post->id
+            ]);
+
+            // Refresh the relationship
+            $this->load('followedPosts');
+
+            return $follow;
+        }
+
+        if ($this->followedPosts->contains($post)) {
+            // Delete existing follow relationship
+            Follow::where('user_id', $this->id)
+                ->where('post_id', $post->id)
+                ->delete();
+
+            // Refresh the relationship
+            $this->load('followedPosts');
+        }
+
+        return null;
+    }
+
+    /**
      * Get the posts authored by the user.
      */
     public function posts(): HasMany
