@@ -4,6 +4,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Card, CardContent } from '@/Components/ui/card';
 import { ScrollArea } from '@/Components/ui/scroll-area';
 import { Button } from '@/Components/ui/button';
+import { FaThumbsUp } from "react-icons/fa6";
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
 
@@ -14,6 +15,7 @@ interface Post {
     category: string;
     author: string;
     votes: number;
+    isUpVoted: boolean;
     comments: number;
     createdAt: string;
 }
@@ -40,6 +42,10 @@ export default function Show({ community, auth, categories, posts }: Props) {
     const [currentCategory, setCurrentCategory] = useState<string | undefined>(
         (usePage().props as { category?: string }).category
     );
+    // posts state should be hydrated from props
+    const [postsState, setPosts] = useState<Post[]>(
+        posts
+    );
 
     const isMember = (usePage().props as { community?: { isMember: boolean } }).community?.isMember;
 
@@ -54,17 +60,61 @@ export default function Show({ community, auth, categories, posts }: Props) {
         router.get(
             route(route().current() ?? '', { ...route().params }),
             { category: internal_name },
-            { preserveState: true, preserveScroll: true, replace: true }
+            {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+                onSuccess: (res: any) => {
+                    setPosts((res.props as Props).posts);
+                }
+            }
         );
     };
 
     const Layout = auth.user ? AuthenticatedLayout : GuestLayout;
-    
+
     const handleCreatePost = (category: string) => {
-        router.visit(route('posts.create', { 
+        router.visit(route('posts.create', {
             community: route().params.community,
-            category: category 
+            category: category
         }));
+    };
+
+    const upVote = (post: Post) => {
+        const postId = post.id;
+        const shouldUpVote = !post.isUpVoted;
+        router.post(
+            route('posts.up_vote', { post: post.id }),
+            { shouldUpVote },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                onSuccess: (res) => {
+                    console.log(res);
+                    // Find and update the post in the posts array
+                    const updatedPosts = postsState.map(post => {
+                        if (post.id === postId) {
+                            let votes = post.votes;
+                            if (!post.isUpVoted && shouldUpVote) {
+                                votes++;
+                            }
+                            if (post.isUpVoted && !shouldUpVote) {
+                                votes--;
+                            }
+                            return {
+                                ...post,
+                                votes,
+                                isUpVoted: shouldUpVote
+                            };
+                        }
+                        return post;
+                    });
+
+                    // Update the posts state locally instead of reloading
+                    setPosts(updatedPosts);
+                },
+            },
+        );
     };
 
     return (
@@ -162,24 +212,30 @@ export default function Show({ community, auth, categories, posts }: Props) {
                                 </DialogContent>
                             </Dialog>
 
-                            <Button 
-                                className="w-full" 
+                            <Button
+                                className="w-full"
                                 onClick={() => setShowCategoryModal(true)}
                             >
                                 Crear nueva publicación
                             </Button>
-                            
+
                             {/* Posts List */}
                             <div className="space-y-4">
-                                {posts.map((post) => (
+                                {postsState.map((post) => (
                                     <Card key={post.id} className="hover:shadow-md transition-shadow">
                                         <CardContent className="p-6">
                                             <div className="flex gap-4">
                                                 {/* Votes */}
-                                                <div className="flex flex-col items-center space-y-1">
-                                                    <Button variant="ghost" size="sm">▲</Button>
-                                                    <span className="text-sm font-medium">{post.votes}</span>
-                                                    <Button variant="ghost" size="sm">▼</Button>
+                                                <div className="flex flex-col items-center justify-center space-y-1">
+                                                    <Button variant="ghost" size="sm" onClick={() => upVote(post)} style={{ height: 'fit-content' }}>
+                                                        <div className={'flex flex-col items-center justify-center py-3'}>
+                                                            <FaThumbsUp
+                                                                style={{ width: '24px', height: '24px' }}
+                                                                className={post.isUpVoted ? 'text-primary' : 'text-gray-500'}
+                                                            />
+                                                            <div className="text-sm font-medium" >{post.votes}</div>
+                                                        </div>
+                                                    </Button>
                                                 </div>
 
                                                 {/* Post Content */}
@@ -211,6 +267,6 @@ export default function Show({ community, auth, categories, posts }: Props) {
                     </div>
                 </div>
             </div>
-        </Layout>
+        </Layout >
     );
 }

@@ -9,6 +9,7 @@ use App\Models\Community;
 use App\Models\File;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Post;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class CommunityController extends Controller
@@ -44,9 +45,9 @@ class CommunityController extends Controller
     {
         $isMember = false;
 
-        if (auth()->check()) {
+        if (Auth::check()) {
             $isMember = $community->users()
-                ->where('user_id', auth()->id())
+                ->where('user_id', Auth::id())
                 ->exists();
         }
 
@@ -62,6 +63,7 @@ class CommunityController extends Controller
         )
             ->selectRaw('(SELECT COUNT(*) FROM up_votes WHERE up_votes.post_id = posts.id) as votes')
             ->selectRaw('(SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.id) as comments')
+            ->selectRaw('(SELECT COUNT(*) FROM up_votes WHERE up_votes.post_id = posts.id AND up_votes.user_id = ' . Auth::id() . ') as is_up_voted')
             ->join('categories', 'posts.category_id', '=', 'categories.id')
             ->join('users', 'posts.author_id', '=', 'users.id')
             ->where('posts.community_id', $community->id)
@@ -79,6 +81,7 @@ class CommunityController extends Controller
                 'category' => $post->category,
                 'author' => $post->author,
                 'votes' => (int) $post->votes,
+                'isUpVoted' => (bool) $post->is_up_voted,
                 'comments' => (int) $post->comments,
                 'createdAt' => $post->created_at->diffForHumans()
             ];

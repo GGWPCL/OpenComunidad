@@ -21,6 +21,8 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/communities/{community:slug}', [CommunityController::class, 'show'])->name('communities.show');
+Route::post('/posts/{post}/up-vote', [PostController::class, 'upVote'])->name('posts.up_vote');
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

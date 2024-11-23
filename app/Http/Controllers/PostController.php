@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Http\Requests\UpVotePostRequest;
 use App\Models\Post;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class PostController extends Controller
@@ -36,5 +39,23 @@ class PostController extends Controller
             'community' => $request->community,
             'category' => $post->category->internal_name,
         ]);
+    }
+
+    public function upVote(UpVotePostRequest $request, Post $post)
+    {
+        $user = Auth::user();
+        if (!$user instanceof User) {
+            return redirect()->route('login');
+        }
+
+        $validated = $request->validated();
+        $shouldUpVote = $validated['shouldUpVote'];
+
+        $upVote = $user->upVotePost($post, $shouldUpVote);
+
+        return redirect()->back()->with(
+            'isUpVoted',
+            (bool) $upVote,
+        );
     }
 }
