@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable
 {
@@ -44,5 +45,40 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Get the communities that the user belongs to.
+     */
+    public function communities(): BelongsToMany
+    {
+        return $this->belongsToMany(Community::class, 'user_communities')
+            ->withPivot('is_admin', 'is_manager', 'is_neighbor')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the posts that the user follows.
+     */
+    public function followedPosts(): BelongsToMany
+    {
+        return $this->belongsToMany(Post::class, 'follows')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the posts authored by the user.
+     */
+    public function posts(): HasMany
+    {
+        return $this->hasMany(Post::class, 'author_id');
+    }
+
+    /**
+     * Get the comments authored by the user.
+     */
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class, 'author_id');
     }
 }
