@@ -7,6 +7,7 @@ cmds = [
     "cp /assets/worker-*.conf /etc/supervisor/conf.d/",
     "cp /assets/supervisord.conf /etc/supervisord.conf",
     "chmod +x /assets/extra.sh",
+    "chmod +x /assets/start.sh",
     "...",
     "/assets/extra.sh",
 ]
