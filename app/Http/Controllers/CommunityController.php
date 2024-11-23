@@ -9,6 +9,7 @@ use App\Models\Community;
 use App\Models\File;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Post;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -44,7 +45,6 @@ class CommunityController extends Controller
     public function show(Community $community)
     {
         $isMember = false;
-
         if (Auth::check()) {
             $isMember = $community->users()
                 ->where('user_id', Auth::id())
@@ -54,41 +54,28 @@ class CommunityController extends Controller
         $categories = Category::select('display_name as name', 'internal_name', 'icon', 'description')->get();
         $selectedCategory = request()->query('category');
 
-        $postsQuery = Post::select(
-            'posts.id',
-            'posts.mutated_title as title',
-            'posts.mutated_content as content',
-            'categories.display_name as category',
-            'users.name as author'
-        )
-            ->selectRaw('(SELECT COUNT(*) FROM up_votes WHERE up_votes.post_id = posts.id) as votes')
-            ->selectRaw('(SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.id) as comments');
-        if (Auth::check() && Auth::id() !== null) {
-            $postsQuery
-                ->selectRaw('(SELECT COUNT(*) FROM up_votes WHERE up_votes.post_id = posts.id AND up_votes.user_id = ' . Auth::id() . ') as is_up_voted');
-        }
-        $postsQuery
-            ->join('categories', 'posts.category_id', '=', 'categories.id')
-            ->join('users', 'posts.author_id', '=', 'users.id')
-            ->where('posts.community_id', $community->id)
-            ->addSelect('posts.created_at');
+        $postsQuery = Post::where('community_id', $community->id);
         if ($selectedCategory) {
-            $postsQuery->where('categories.internal_name', $selectedCategory);
+            $postsQuery
+                ->join('categories', 'posts.category_id', '=', 'categories.id')
+                ->where('categories.internal_name', $selectedCategory);
         }
 
-        $posts = $postsQuery->get()->map(function ($post) {
-            return [
-                'id' => $post->id,
-                'title' => $post->title,
-                'content' => $post->content,
-                'category' => $post->category,
-                'author' => $post->author,
-                'votes' => (int) $post->votes,
-                'isUpVoted' => (bool) $post->is_up_voted,
-                'comments' => (int) $post->comments,
-                'createdAt' => $post->created_at->diffForHumans()
-            ];
-        });
+        $user = Auth::user();
+        $posts = $postsQuery->get()
+            ->map(function ($post) use ($user) {
+                return [
+                    'id' => $post->id,
+                    'title' => $post->title,
+                    'content' => $post->content,
+                    'category' => $post->category?->display_name,
+                    'author' => $post->author?->name,
+                    'comments' => (int) $post->comments?->count(),
+                    'votes' => (int) $post->upVotedBy()?->count(),
+                    'isUpVoted' => $user instanceof User && $user->upVotedPosts()?->where('post_id', $post->id)->exists(),
+                    'createdAt' => $post->created_at->diffForHumans()
+                ];
+            })->all();
 
         return Inertia::render('Communities/Show', [
             'community' => [

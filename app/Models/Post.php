@@ -68,4 +68,13 @@ class Post extends Model
         return $this->belongsToMany(User::class, 'follows')
             ->withTimestamps();
     }
+
+    /**
+     * Get the users that up voted this post.
+     */
+    public function upVotedBy(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'up_votes')
+            ->withTimestamps();
+    }
 }
