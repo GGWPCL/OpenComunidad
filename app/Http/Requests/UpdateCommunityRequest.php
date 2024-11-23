@@ -22,7 +22,9 @@ class UpdateCommunityRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => ['required', 'string', 'max:255'],
+            'logo' => ['nullable', 'image', 'max:4096'],
+            'banner' => ['nullable', 'image', 'max:4096'],
         ];
     }
 }
