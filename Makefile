@@ -19,3 +19,7 @@ run-build:
 .PHONY: stop
 stop:
 	@./vendor/bin/sail down
+
+.PHONY: migrate
+migrate:
+	@./vendor/bin/sail artisan migrate
