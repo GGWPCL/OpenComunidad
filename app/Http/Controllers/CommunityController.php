@@ -62,13 +62,16 @@ class CommunityController extends Controller
             'users.name as author'
         )
             ->selectRaw('(SELECT COUNT(*) FROM up_votes WHERE up_votes.post_id = posts.id) as votes')
-            ->selectRaw('(SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.id) as comments')
-            ->selectRaw('(SELECT COUNT(*) FROM up_votes WHERE up_votes.post_id = posts.id AND up_votes.user_id = ' . Auth::id() . ') as is_up_voted')
+            ->selectRaw('(SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.id) as comments');
+        if (Auth::check() && Auth::id() !== null) {
+            $postsQuery
+                ->selectRaw('(SELECT COUNT(*) FROM up_votes WHERE up_votes.post_id = posts.id AND up_votes.user_id = ' . Auth::id() . ') as is_up_voted');
+        }
+        $postsQuery
             ->join('categories', 'posts.category_id', '=', 'categories.id')
             ->join('users', 'posts.author_id', '=', 'users.id')
             ->where('posts.community_id', $community->id)
             ->addSelect('posts.created_at');
-
         if ($selectedCategory) {
             $postsQuery->where('categories.internal_name', $selectedCategory);
         }
