@@ -7,13 +7,36 @@ cmds = [
     "cp /assets/worker-*.conf /etc/supervisor/conf.d/",
     "cp /assets/supervisord.conf /etc/supervisord.conf",
     "chmod +x /assets/start.sh",
-    "..."
+    "chmod +x /assets/extra.sh",
+    "...",
+    "/assets/extra.sh",
 ]
+
+[phases.postbuild]
+cmds = [
+    "php /app/artisan migrate --force",
+    "php /app/artisan optimize:clear",
+]
+dependsOn = ["build"]
 
 [start]
 cmd = '/assets/start.sh'
 
 [staticAssets]
+"extra.sh" = '''
+#!/bin/bash
+
+# Enable OPcache (does this even work?)
+PHP_INI_PATH=$(php -i | grep '/php.ini' | awk '{print $6}')
+echo 'php path found: ' $PHP_INI_PATH
+# Enable opcache by adding to the bottom of the php.ini
+echo opcache.memory_consumption=256 >> "$PHP_INI_PATH"
+echo opcache.interned_strings_buffer=64 >> "$PHP_INI_PATH"
+echo opcache.max_accelerated_files=32531 >> "$PHP_INI_PATH"
+echo opcache.validate_timestamps=0 >> "$PHP_INI_PATH"
+echo opcache.enable_cli=1 >> "$PHP_INI_PATH"
+'''
+
 "start.sh" = '''
 #!/bin/bash
 
