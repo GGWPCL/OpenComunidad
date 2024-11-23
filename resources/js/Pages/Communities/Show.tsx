@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { Card, CardContent } from '@/Components/ui/card';
 import { ScrollArea } from '@/Components/ui/scroll-area';
 import { Button } from '@/Components/ui/button';
@@ -38,6 +38,11 @@ interface Props {
 }
 
 export default function Show({ community, auth, categories, posts }: Props) {
+    const { data, setData, post: postForm, processing } = useForm<{ post?: Post, shouldUpVote: boolean }>({
+        post: undefined,
+        shouldUpVote: false,
+    });
+
     const [showCategoryModal, setShowCategoryModal] = useState(false);
 
     const [currentCategory, setCurrentCategory] = useState<string | undefined>(
@@ -54,6 +59,35 @@ export default function Show({ community, auth, categories, posts }: Props) {
         const category = new URLSearchParams(window.location.search).get('category');
         setCurrentCategory(category || undefined);
     }, []);
+
+    useEffect(() => {
+        if (data.post) {
+            postForm(route('posts.up_vote', { post: data.post.id }), {
+                data: { shouldUpVote: data.shouldUpVote },
+                onSuccess: () => {
+                    const updatedPosts = postsState.map(p => {
+                        if (p.id === data.post?.id) {
+                            let votes = p.votes;
+                            if (!p.isUpVoted && data.shouldUpVote) {
+                                votes++;
+                            }
+                            if (p.isUpVoted && !data.shouldUpVote) {
+                                votes--;
+                            }
+                            return {
+                                ...p,
+                                votes,
+                                isUpVoted: data.shouldUpVote
+                            };
+                        }
+                        return p;
+                    });
+                    setPosts(updatedPosts);
+                },
+            });
+        }
+    }, [data]);
+
 
     const handleCategoryClick = (internal_name?: string) => {
         setCurrentCategory(internal_name);
@@ -79,43 +113,6 @@ export default function Show({ community, auth, categories, posts }: Props) {
             community: route().params.community,
             category: category
         }));
-    };
-
-    const upVote = (post: Post) => {
-        const postId = post.id;
-        const shouldUpVote = !post.isUpVoted;
-        router.post(
-            route('posts.up_vote', { post: post.id }),
-            { shouldUpVote },
-            {
-                preserveState: true,
-                preserveScroll: true,
-                onSuccess: (res) => {
-                    console.log(res);
-                    // Find and update the post in the posts array
-                    const updatedPosts = postsState.map(post => {
-                        if (post.id === postId) {
-                            let votes = post.votes;
-                            if (!post.isUpVoted && shouldUpVote) {
-                                votes++;
-                            }
-                            if (post.isUpVoted && !shouldUpVote) {
-                                votes--;
-                            }
-                            return {
-                                ...post,
-                                votes,
-                                isUpVoted: shouldUpVote
-                            };
-                        }
-                        return post;
-                    });
-
-                    // Update the posts state locally instead of reloading
-                    setPosts(updatedPosts);
-                },
-            },
-        );
     };
 
     return (
@@ -228,7 +225,7 @@ export default function Show({ community, auth, categories, posts }: Props) {
                                             <div className="flex gap-4">
                                                 {/* Votes */}
                                                 <div className="flex flex-col items-center justify-center space-y-1">
-                                                    <Button variant="ghost" size="sm" onClick={() => upVote(post)} style={{ height: 'fit-content' }}>
+                                                    <Button variant="ghost" size="sm" onClick={() => setData({ post: post, shouldUpVote: !post.isUpVoted })} style={{ height: 'fit-content' }}>
                                                         <div className={'flex flex-col items-center justify-center py-3'}>
                                                             <FaThumbsUp
                                                                 style={{ width: '24px', height: '24px' }}
