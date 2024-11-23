@@ -29,6 +29,7 @@ class MagicLoginController extends Controller
         }
 
         $generator = new LoginUrl($user);
+        $generator->setRedirectUrl(route('dashboard'));
         $url = $generator->generate();
 
         $user->notify(new MagicLoginLink($url, !$user->onboarding));
