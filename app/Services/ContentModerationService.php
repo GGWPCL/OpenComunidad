@@ -79,4 +79,62 @@ class ContentModerationService
             return null;
         }
     }
+
+    public function preflight(string $content): ?string
+    {
+        try {
+            $prompt = <<<EOT
+                {$content}
+                EOT;
+            $response = Http::withHeaders([
+                'Authorization' => "Bearer {$this->apiToken}",
+            ])->post($this->baseUrl . '/@cf/mistral/mistral-7b-instruct-v0.2-lora', [
+                'messages' => [
+                    ['role' => 'user', 'content' => 'agree'],
+                    ['role' => 'system', 'content' => <<<EOT
+                        Eres un sistema automatizado de prevalidación de contenido experto que evalúa si un mensaje es suficientemente completo y relevante para ser publicado. Tu tarea es analizar el contenido proporcionado y determinar si cumple con los estándares de suficiencia.
+
+                        - **Si el contenido es insuficiente:** Devuelve un objeto JSON con `"ready": 0` y un `"message"` que contenga una sugerencia constructiva, amigable, positiva, empática y concisa para mejorar el mensaje.
+                        - **Si el contenido es suficiente:** Devuelve un objeto JSON con `"ready": 1` y un `"message"` indicando que el mensaje está listo para ser publicado.
+
+                        **Instrucciones:**
+                        1. **Evaluación del Contenido:** Analiza el mensaje recibido para determinar si es suficientemente informativo, claro y relevante.
+                        2. **Respuesta Apropiada:**
+                        - **Insuficiente:** Proporciona una retroalimentación específica y constructiva sin añadir información adicional que no esté presente en el mensaje original.
+                        - **Suficiente:** Indica que el mensaje está listo para ser publicado de manera clara y concisa.
+
+                        **Requisitos:**
+                        - La respuesta debe ser un objeto JSON válido.
+                        - Utiliza exclusivamente el idioma español.
+                        - No añadas información, personajes, o detalles que no estén presentes en el mensaje original.
+                        - Mantén un tono amigable, positivo y empático.
+                        - La respuesta debe ser clara, respetuosa y concisa.
+                        - **No combines retroalimentación con aprobación** en una sola respuesta.
+                        - No incluyas explicaciones adicionales fuera del objeto JSON.
+                        - Mantén la respuesta breve y al punto.
+                    EOT],
+                    ['role' => 'user', 'content' => $prompt]
+                ]
+            ]);
+
+            if ($response->successful()) {
+                $result = $response->json('result.response');
+                return is_string($result) ? $result : null;
+            }
+
+            Log::error('Content moderation failed', [
+                'error' => $response->json(),
+                'content' => $content
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Content moderation error', [
+                'error' => $e->getMessage(),
+                'content' => $content
+            ]);
+
+            return null;
+        }
+    }
 }

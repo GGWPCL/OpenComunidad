@@ -18,3 +18,14 @@ Artisan::command('moderate {text}', function (ContentModerationService $moderato
         $this->error('Moderation failed');
     }
 })->purpose('Test content moderation with provided text');
+
+Artisan::command('preflight {text}', function (ContentModerationService $moderator) {
+    $result = $moderator->preflight($this->argument('text'));
+
+    if ($result) {
+        $this->info("Original text:\n" . $this->argument('text'));
+        $this->info("\nPreflight text:\n" . $result);
+    } else {
+        $this->error('Preflight failed');
+    }
+})->purpose('Test content preflight with provided text');
