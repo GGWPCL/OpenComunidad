@@ -1,15 +1,13 @@
 [phases.setup]
-nixPkgs = ["...", "python311Packages.supervisor", "certbot"]
+nixPkgs = ["...", "python311Packages.supervisor"]
 
 [phases.build]
 cmds = [
     "mkdir -p /etc/supervisor/conf.d/",
     "cp /assets/worker-*.conf /etc/supervisor/conf.d/",
     "cp /assets/supervisord.conf /etc/supervisord.conf",
-    "chmod +x /assets/start.sh",
     "chmod +x /assets/extra.sh",
-    "mkdir -p /etc/nginx/ssl/",
-    "openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/ssl/nginx.key -out /etc/nginx/ssl/nginx.crt -subj '/CN=opencomunidad.cl'",
+    "...",
     "/assets/extra.sh",
 ]
 
@@ -149,20 +147,9 @@ http {
     server_names_hash_bucket_size 128; # this seems to be required for some vhosts
 
     server {
-        listen 443 ssl;
-        listen [::]:443 ssl;
-        server_name opencomunidad.cl www.opencomunidad.cl;
-
-        ssl_certificate /etc/nginx/ssl/nginx.crt;
-        ssl_certificate_key /etc/nginx/ssl/nginx.key;
-
-        # SSL configuration
-        ssl_protocols TLSv1.2 TLSv1.3;
-        ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
-        ssl_prefer_server_ciphers off;
-
-        # HSTS (uncomment if you're sure)
-        # add_header Strict-Transport-Security "max-age=63072000" always;
+        listen ${PORT};
+        listen [::]:${PORT};
+        server_name localhost;
 
         $if(NIXPACKS_PHP_ROOT_DIR) (
             root ${NIXPACKS_PHP_ROOT_DIR};
