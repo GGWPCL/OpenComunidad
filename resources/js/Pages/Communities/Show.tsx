@@ -42,7 +42,7 @@ const mockPosts: Post[] = [
 ];
 
 
-export default function Show({ community, auth }: { community?: { name: string }, auth: { user: any } }) {
+export default function Show({ community, auth }: { community?: { name: string, isMember: boolean }, auth: { user: any } }) {
     const categories = [
         { name: "Todo", internal_name: "all", icon: "📋" },
         { name: "Propuestas", internal_name: "proposals", icon: "💡" },
@@ -80,6 +80,17 @@ export default function Show({ community, auth }: { community?: { name: string }
                     <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
                         <p className="text-sm text-amber-700">
                             Estás viendo una versión limitada del contenido. Inicia sesión para ver todas las publicaciones y participar en la comunidad
+                        </p>
+                    </div>
+                </div>
+            )}
+
+            {/* Non-member warning banner */}
+            {auth.user && !community?.isMember && (
+                <div className="bg-amber-50 border-b border-amber-100">
+                    <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
+                        <p className="text-sm text-amber-700">
+                            No eres miembro de esta comunidad. Estás viendo una versión limitada del contenido. Contacta con un administrador para unirte y participar en la comunidad.
                         </p>
                     </div>
                 </div>

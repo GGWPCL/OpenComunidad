@@ -38,9 +38,18 @@ class CommunityController extends Controller
      */
     public function show(Community $community)
     {
+        $isMember = false;
+        
+        if (auth()->check()) {
+            $isMember = $community->users()
+                ->where('user_id', auth()->id())
+                ->exists();
+        }
+
         return Inertia::render('Communities/Show', [
             'community' => [
-                'name' => 'Switch 345'
+                'name' => 'Switch 345',
+                'isMember' => $isMember,
             ]
         ]);
     }
