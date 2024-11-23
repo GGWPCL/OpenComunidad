@@ -25,7 +25,7 @@ interface Category {
 }
 
 interface Props {
-    community?: {
+    community: {
         name: string;
         isMember: boolean;
     };
@@ -40,6 +40,8 @@ export default function Show({ community, auth, categories, posts }: Props) {
     const [currentCategory, setCurrentCategory] = useState<string | undefined>(
         (usePage().props as { category?: string }).category
     );
+
+    const isMember = (usePage().props as { community?: { isMember: boolean } }).community?.isMember;
 
     useEffect(() => {
         const category = new URLSearchParams(window.location.search).get('category');
@@ -87,7 +89,7 @@ export default function Show({ community, auth, categories, posts }: Props) {
             )}
 
             {/* Non-member warning banner */}
-            {auth.user && !community?.isMember && (
+            {auth.user && !isMember && (
                 <div className="bg-amber-50 border-b border-amber-100">
                     <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
                         <p className="text-sm text-amber-700">
