@@ -23,6 +23,7 @@ interface Post {
 interface Category {
     name: string;
     internal_name: string;
+    description: string;
     icon: string;
 }
 
@@ -205,7 +206,7 @@ export default function Show({ community, auth, categories, posts }: Props) {
                                             >
                                                 <div className="text-2xl">{category.icon}</div>
                                                 <div className="font-semibold">{category.name}</div>
-                                                <div className="text-sm text-gray-500 whitespace-normal w-full">Pending: category description</div>
+                                                <div className="text-sm text-gray-500 whitespace-normal w-full">{category.description}</div>
                                             </Button>
                                         ))}
                                     </div>

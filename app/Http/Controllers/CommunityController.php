@@ -51,7 +51,7 @@ class CommunityController extends Controller
                 ->exists();
         }
 
-        $categories = Category::select('display_name as name', 'internal_name', 'icon')->get();
+        $categories = Category::select('display_name as name', 'internal_name', 'icon', 'description')->get();
         $selectedCategory = request()->query('category');
 
         $postsQuery = Post::select(

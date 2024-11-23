@@ -24,6 +24,7 @@ class Category extends Model
         'display_name',
         'internal_name',
         'icon',
+        'description'
     ];
 
     /**
