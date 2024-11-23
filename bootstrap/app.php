@@ -16,6 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
         ]);
 
+        $middleware->alias([
+            'onboarding.complete' => \App\Http\Middleware\OnboardingIsComplete::class,
+        ]);
+
         //
     })
     ->withExceptions(function (Exceptions $exceptions) {

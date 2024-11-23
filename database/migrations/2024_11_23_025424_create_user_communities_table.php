@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('user_communities', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('community_id')->constrained('communities');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('community_id')->constrained()->onDelete('cascade');
             $table->boolean('is_admin')->default(false);
             $table->boolean('is_manager')->default(false);
             $table->boolean('is_neighbor')->default(false);

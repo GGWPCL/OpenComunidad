@@ -3,11 +3,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Com
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { PageProps } from '@/types';
 
-export default function Onboarding({ auth }: PageProps) {
+interface OnboardingProps extends PageProps {
+    communities: { id: number; name: string; slug: string }[];
+}
+
+export default function Onboarding({ auth, communities }: OnboardingProps) {
     const { data, setData, post, processing, errors } = useForm({
         name: auth.user?.name || '',
+        community_id: '',
     });
 
     const submit = (e: React.FormEvent) => {
@@ -41,6 +47,30 @@ export default function Onboarding({ auth }: PageProps) {
                                 {errors.name && (
                                     <p className="text-sm text-red-600 dark:text-red-400">
                                         {errors.name}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="community_id">Selecciona una Comunidad</Label>
+                                <Select
+                                    value={data.community_id}
+                                    onValueChange={(value) => setData('community_id', value)}
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="-- Selecciona una Comunidad --" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {communities.map(community => (
+                                            <SelectItem key={community.id} value={community.id.toString()}>
+                                                {community.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                {errors.community_id && (
+                                    <p className="text-sm text-red-600 dark:text-red-400">
+                                        {errors.community_id}
                                     </p>
                                 )}
                             </div>

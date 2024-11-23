@@ -1,22 +1,14 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
-export default function Dashboard() {
-    const userCommunities = [
-        {
-            name: "Switch 345",
-            address: "Av. Américo Vespucio Sur 345, Las Condes",
-            slug: "switch-345",
-            status: "approved"
-        },
-        {
-            name: "Edificio Las Palmas",
-            address: "Av. Las Palmas 123, Santiago",
-            slug: "edificio-las-palmas",
-            status: "pending"
-        }
-    ];
+interface Community {
+    name: string;
+    address: string;
+    slug: string;
+    status: string;
+}
 
+export default function Dashboard({ userCommunities = [] }: { userCommunities: Community[] }) {
     return (
         <AuthenticatedLayout
             header={
@@ -32,8 +24,8 @@ export default function Dashboard() {
                     <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                         <div className="p-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {userCommunities.map((community, index) => (
-                                    <a 
+                                {(userCommunities || []).map((community, index) => (
+                                    <a
                                         href={`/communities/${community.slug}`}
                                         key={index}
                                         className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer block w-full"
@@ -51,7 +43,7 @@ export default function Dashboard() {
                                                 {community.address}
                                             </p>
                                             {community.status === 'pending' && (
-                                                <span 
+                                                <span
                                                     className="inline-block px-2 py-1 text-sm bg-yellow-100 text-yellow-800 rounded cursor-help"
                                                     title="Un verificador revisará pronto tu registro"
                                                 >
