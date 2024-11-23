@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
+use App\Models\Community;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -13,11 +13,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        try {
+            $community = Community::factory()->create([
+                'name' => 'Switch 345',
+                'slug' => 'switch-345',
+            ]);
+        } catch (\Exception $e) {
+            dump('Error creating community:', $e->getMessage());
+        }
     }
 }
