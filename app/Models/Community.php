@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Community extends Model
 {
@@ -20,6 +21,8 @@ class Community extends Model
     protected $fillable = [
         'name',
         'slug',
+        'logo_id',
+        'banner_id',
     ];
 
     public function getRouteKeyName(): string
@@ -67,5 +70,21 @@ class Community extends Model
     public function neighbors(): BelongsToMany
     {
         return $this->users()->wherePivot('is_neighbor', true);
+    }
+
+    /**
+     * Get the logo of the community.
+     */
+    public function logo(): BelongsTo
+    {
+        return $this->belongsTo(File::class, 'logo_id');
+    }
+
+    /**
+     * Get the banner of the community.
+     */
+    public function banner(): BelongsTo
+    {
+        return $this->belongsTo(File::class, 'banner_id');
     }
 }

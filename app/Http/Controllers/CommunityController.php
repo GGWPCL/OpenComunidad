@@ -6,6 +6,8 @@ use App\Http\Requests\StoreCommunityRequest;
 use App\Http\Requests\UpdateCommunityRequest;
 use App\Models\Category;
 use App\Models\Community;
+use App\Models\File;
+use Illuminate\Support\Facades\Storage;
 use App\Models\Post;
 use Inertia\Inertia;
 
@@ -40,6 +42,14 @@ class CommunityController extends Controller
      */
     public function show(Community $community)
     {
+        $isMember = false;
+
+        if (auth()->check()) {
+            $isMember = $community->users()
+                ->where('user_id', auth()->id())
+                ->exists();
+        }
+
         $categories = Category::select('display_name as name', 'internal_name', 'icon')->get();
         $selectedCategory = request()->query('category');
 
@@ -77,6 +87,9 @@ class CommunityController extends Controller
         return Inertia::render('Communities/Show', [
             'community' => [
                 'name' => $community->name,
+                'isMember' => $isMember,
+                'logo' => $community->logo?->url,
+                'banner' => $community->banner?->url,
             ],
             'categories' => $categories,
             'posts' => $posts,
@@ -96,7 +109,38 @@ class CommunityController extends Controller
      */
     public function update(UpdateCommunityRequest $request, Community $community)
     {
-        //
+        if ($request->hasFile('logo')) {
+            $path = $request->file('logo')->store('community-logos', 'r2');
+            $file = File::create([
+                'name' => $request->file('logo')->getClientOriginalName(),
+                'mime' => $request->file('logo')->getMimeType(),
+                'url' => Storage::disk('r2')->url($path),
+                'metadata' => [
+                    'size' => $request->file('logo')->getSize(),
+                    'path' => $path,
+                ],
+            ]);
+            $community->logo_id = $file->id;
+        }
+
+        if ($request->hasFile('banner')) {
+            $path = $request->file('banner')->store('community-banners', 'r2');
+            $file = File::create([
+                'name' => $request->file('banner')->getClientOriginalName(),
+                'mime' => $request->file('banner')->getMimeType(),
+                'url' => Storage::disk('r2')->url($path),
+                'metadata' => [
+                    'size' => $request->file('banner')->getSize(),
+                    'path' => $path,
+                ],
+            ]);
+            $community->banner_id = $file->id;
+        }
+
+        $community->name = $request->name;
+        $community->save();
+
+        return redirect()->back();
     }
 
     /**

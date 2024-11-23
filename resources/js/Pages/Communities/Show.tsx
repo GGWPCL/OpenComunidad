@@ -1,5 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router, usePage } from '@inertiajs/react';
+import GuestLayout from '@/Layouts/GuestLayout';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Card, CardContent } from '@/Components/ui/card';
 import { ScrollArea } from '@/Components/ui/scroll-area';
 import { Button } from '@/Components/ui/button';
@@ -24,13 +25,15 @@ interface Category {
 
 interface Props {
     community?: {
-        name: string
+        name: string;
+        isMember: boolean;
     };
+    auth: { user: any };
     categories: Category[];
     posts: Post[];
 }
 
-export default function Show({ community, categories, posts }: Props) {
+export default function Show({ community, auth, categories, posts }: Props) {
     const [currentCategory, setCurrentCategory] = useState<string | undefined>(
         (usePage().props as { category?: string }).category
     );
@@ -50,8 +53,10 @@ export default function Show({ community, categories, posts }: Props) {
         );
     };
 
+    const Layout = auth.user ? AuthenticatedLayout : GuestLayout;
+
     return (
-        <AuthenticatedLayout
+        <Layout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
                     {community?.name || "Comunidad"}
@@ -59,6 +64,28 @@ export default function Show({ community, categories, posts }: Props) {
             }
         >
             <Head title={`${community?.name || 'Comunidad'} - Open Comunidad`} />
+
+            {/* Guest warning banner */}
+            {!auth.user && (
+                <div className="bg-amber-50 border-b border-amber-100">
+                    <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
+                        <p className="text-sm text-amber-700">
+                            Estás viendo una versión limitada del contenido. Inicia sesión para ver todas las publicaciones y participar en la comunidad
+                        </p>
+                    </div>
+                </div>
+            )}
+
+            {/* Non-member warning banner */}
+            {auth.user && !community?.isMember && (
+                <div className="bg-amber-50 border-b border-amber-100">
+                    <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
+                        <p className="text-sm text-amber-700">
+                            No eres miembro de esta comunidad. Estás viendo una versión limitada del contenido. Contacta con un administrador para unirte y participar en la comunidad.
+                        </p>
+                    </div>
+                </div>
+            )}
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -145,6 +172,6 @@ export default function Show({ community, categories, posts }: Props) {
                     </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </Layout>
     );
 }
