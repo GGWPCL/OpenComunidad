@@ -20,6 +20,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'onboarding.complete' => \App\Http\Middleware\OnboardingIsComplete::class,
         ]);
 
+        $middleware->trustProxies(at: '*');
+
         //
     })
     ->withExceptions(function (Exceptions $exceptions) {
