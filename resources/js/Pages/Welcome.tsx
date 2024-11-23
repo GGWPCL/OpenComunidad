@@ -2,9 +2,17 @@ import { Card, CardHeader, CardTitle } from '@/Components/ui/card';
 import { PageProps } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import ApplicationLogo from '@/Components/ApplicationLogo';
+
+interface Community {
+    name: string;
+    address: string;
+    slug: string;
+}
+
 export default function Welcome({
-    auth
-}: PageProps<{ laravelVersion: string; phpVersion: string }>) {
+    auth,
+    communities = [],
+}: PageProps<{ communities: Community[] }>) {
     return (
         <>
             <Head title="Open Comunidad - Switch 345" />
@@ -100,38 +108,7 @@ export default function Welcome({
                             Nuestras Comunidades
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-12">
-                            {[
-                                {
-                                    name: "Edificio Las Palmas",
-                                    address: "Av. Las Palmas 123, Santiago",
-                                    slug: "edificio-las-palmas"
-                                },
-                                {
-                                    name: "Condominio El Bosque",
-                                    address: "Calle El Bosque 456, Santiago",
-                                    slug: "condominio-el-bosque"
-                                },
-                                {
-                                    name: "Torres del Valle",
-                                    address: "Av. Del Valle 789, Santiago",
-                                    slug: "torres-del-valle"
-                                },
-                                {
-                                    name: "Residencial Los Pinos",
-                                    address: "Calle Los Pinos 321, Santiago",
-                                    slug: "residencial-los-pinos"
-                                },
-                                {
-                                    name: "Edificio Central",
-                                    address: "Av. Central 654, Santiago",
-                                    slug: "edificio-central"
-                                },
-                                {
-                                    name: "Switch 345",
-                                    address: "Av. Américo Vespucio Sur 345, Las Condes",
-                                    slug: "switch-345"
-                                }
-                            ].map((community, index) => (
+                            {communities.map((community, index) => (
                                 <a
                                     href={`/communities/${community.slug}`}
                                     key={index}
