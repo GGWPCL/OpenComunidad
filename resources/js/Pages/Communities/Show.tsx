@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/Components/ui/card';
 import { ScrollArea } from '@/Components/ui/scroll-area';
 import { Button } from '@/Components/ui/button';
 import { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
 
 interface Post {
     id: number;
@@ -34,6 +35,8 @@ interface Props {
 }
 
 export default function Show({ community, auth, categories, posts }: Props) {
+    const [showCategoryModal, setShowCategoryModal] = useState(false);
+
     const [currentCategory, setCurrentCategory] = useState<string | undefined>(
         (usePage().props as { category?: string }).category
     );
@@ -54,6 +57,13 @@ export default function Show({ community, auth, categories, posts }: Props) {
     };
 
     const Layout = auth.user ? AuthenticatedLayout : GuestLayout;
+    
+    const handleCreatePost = (category: string) => {
+        router.visit(route('posts.create', { 
+            community: route().params.community,
+            category: category 
+        }));
+    };
 
     return (
         <Layout
@@ -128,8 +138,35 @@ export default function Show({ community, auth, categories, posts }: Props) {
 
                         {/* Main Content */}
                         <div className="flex-1 space-y-4">
-                            <Button className="w-full">Crear nueva publicación</Button>
+                            <Dialog open={showCategoryModal} onOpenChange={setShowCategoryModal}>
+                                <DialogContent className="sm:max-w-[600px]">
+                                    <DialogHeader>
+                                        <DialogTitle>Elige un tipo de publicación</DialogTitle>
+                                    </DialogHeader>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+                                        {categories.filter(cat => cat.internal_name !== 'all').map((category) => (
+                                            <Button
+                                                key={category.internal_name}
+                                                variant="outline"
+                                                className="h-auto p-4 flex flex-col items-center text-center space-y-2 w-full"
+                                                onClick={() => handleCreatePost(category.internal_name)}
+                                            >
+                                                <div className="text-2xl">{category.icon}</div>
+                                                <div className="font-semibold">{category.name}</div>
+                                                <div className="text-sm text-gray-500 whitespace-normal w-full">Pending: category description</div>
+                                            </Button>
+                                        ))}
+                                    </div>
+                                </DialogContent>
+                            </Dialog>
 
+                            <Button 
+                                className="w-full" 
+                                onClick={() => setShowCategoryModal(true)}
+                            >
+                                Crear nueva publicación
+                            </Button>
+                            
                             {/* Posts List */}
                             <div className="space-y-4">
                                 {posts.map((post) => (
