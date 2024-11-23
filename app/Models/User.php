@@ -117,45 +117,45 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the posts that the user has upvoted.
+     * Get the posts that the user has up voted.
      */
-    public function upvotedPosts(): BelongsToMany
+    public function upVotedPosts(): BelongsToMany
     {
         return $this->belongsToMany(Post::class, 'up_votes')
             ->withTimestamps();
     }
 
     /**
-     * Upvote or remove upvote from a post
+     * Upvote or remove up vote from a post
      */
-    public function upvotePost(Post $post, bool $shouldUpvote): ?UpVote
+    public function upVotePost(Post $post, bool $shouldUpvote): ?UpVote
     {
         if ($shouldUpvote) {
-            if ($this->upvotedPosts->contains($post)) {
+            if ($this->upVotedPosts->contains($post)) {
                 return UpVote::where('user_id', $this->id)
                     ->where('post_id', $post->id)
                     ->first();
             }
 
-            $upvote = UpVote::create([
+            $upVote = UpVote::create([
                 'user_id' => $this->id,
                 'post_id' => $post->id
             ]);
 
             // Refresh the relationship
-            $this->load('upvotedPosts');
+            $this->load('upVotedPosts');
 
-            return $upvote;
+            return $upVote;
         }
 
-        if ($this->upvotedPosts->contains($post)) {
-            // Delete existing upvote relationship
+        if ($this->upVotedPosts->contains($post)) {
+            // Delete existing upVote relationship
             UpVote::where('user_id', $this->id)
                 ->where('post_id', $post->id)
                 ->delete();
 
             // Refresh the relationship
-            $this->load('upvotedPosts');
+            $this->load('upVotedPosts');
         }
 
         return null;

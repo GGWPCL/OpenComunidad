@@ -14,7 +14,7 @@ class UpVoteTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_upvote_behavior(): void
+    public function test_up_vote_behavior(): void
     {
         // Create test user and required relationships
         $user = User::factory()->create();
@@ -38,28 +38,28 @@ class UpVoteTest extends TestCase
         ]);
 
         // Test upvoting a post
-        $upvote = $user->upvotePost($post, true);
+        $upVote = $user->upVotePost($post, true);
 
-        $this->assertInstanceOf(UpVote::class, $upvote);
-        $this->assertTrue($user->upvotedPosts->contains($post));
-        $this->assertEquals(1, $user->upvotedPosts->count());
-        $this->assertEquals($user->id, $upvote->user_id);
-        $this->assertEquals($post->id, $upvote->post_id);
+        $this->assertInstanceOf(UpVote::class, $upVote);
+        $this->assertTrue($user->upVotedPosts->contains($post));
+        $this->assertEquals(1, $user->upVotedPosts->count());
+        $this->assertEquals($user->id, $upVote->user_id);
+        $this->assertEquals($post->id, $upVote->post_id);
 
-        // Test upvoting the same post again (should return existing upvote)
-        $duplicateUpvote = $user->upvotePost($post, true);
-        $this->assertEquals($upvote->id, $duplicateUpvote->id);
-        $this->assertEquals(1, $user->upvotedPosts()->count());
+        // Test upvoting the same post again (should return existing upVote)
+        $duplicateUpvote = $user->upVotePost($post, true);
+        $this->assertEquals($upVote->id, $duplicateUpvote->id);
+        $this->assertEquals(1, $user->upVotedPosts()->count());
 
-        // Test removing an upvote from a post
-        $result = $user->upvotePost($post, false);
+        // Test removing an upVote from a post
+        $result = $user->upVotePost($post, false);
         $this->assertNull($result);
-        $this->assertFalse($user->upvotedPosts->contains($post));
-        $this->assertEquals(0, $user->upvotedPosts()->count());
+        $this->assertFalse($user->upVotedPosts->contains($post));
+        $this->assertEquals(0, $user->upVotedPosts()->count());
 
-        // Test removing an upvote from an already non-upvoted post
-        $result = $user->upvotePost($post, false);
+        // Test removing an upVote from an already non-upVoted post
+        $result = $user->upVotePost($post, false);
         $this->assertNull($result);
-        $this->assertEquals(0, $user->upvotedPosts()->count());
+        $this->assertEquals(0, $user->upVotedPosts()->count());
     }
 }
