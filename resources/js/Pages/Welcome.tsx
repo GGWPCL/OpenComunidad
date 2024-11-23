@@ -26,8 +26,8 @@ export default function Welcome({
                                 </Link>
                             ) : (
                                 <>
-                                    <Link href={route('login')} className="btn-secondary">
-                                        Iniciar Sesión
+                                    <Link href={route('login')} className="btn-primary">
+                                        Ingresar
                                     </Link>
                                 </>
                             )}

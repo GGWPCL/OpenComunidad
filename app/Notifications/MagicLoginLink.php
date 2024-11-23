@@ -24,18 +24,39 @@ class MagicLoginLink extends Notification
     public function toMail($notifiable)
     {
         $message = (new MailMessage)
-            ->subject($this->isNewUser ? 'Welcome to Open Comunidad!' : 'Your Magic Login Link');
+            ->subject($this->getEmailSubject())
+            ->greeting($this->getGreeting());
 
         if ($this->isNewUser) {
-            $message->line('Welcome to Open Comunidad! Click the button below to access your new account.')
-                   ->line('We\'re excited to have you join our community.');
+            $message->line('¡Bienvenido a Open Comunidad! Te damos la bienvenida a nuestra plataforma.')
+                   ->line('Para comenzar a usar tu cuenta, simplemente haz clic en el botón de abajo.')
+                   ->line('En Open Comunidad podrás:')
+                   ->line('• Conectar con otros miembros')
+                   ->line('• Participar en discusiones')
+                   ->line('• Acceder a recursos exclusivos');
         } else {
-            $message->line('Click the button below to log in to your account.');
+            $message->line('Hemos recibido una solicitud de acceso para tu cuenta.')
+                   ->line('Para iniciar sesión de forma segura, haz clic en el botón de abajo.');
         }
 
         return $message
-            ->action('Log In', $this->url)
-            ->line('This login link will expire in ' . config('laravel-passwordless-login.login_route_expires') . ' minutes.')
-            ->line('If you did not request this login link, no action is required.');
+            ->action('Iniciar Sesión', $this->url)
+            ->line('⚠️ Este enlace expirará en ' . config('laravel-passwordless-login.login_route_expires') . ' minutos.')
+            ->line('Si no solicitaste este enlace, puedes ignorar este correo de forma segura.')
+            ->salutation('¡Saludos del equipo de Open Comunidad!');
+    }
+
+    private function getEmailSubject(): string
+    {
+        return $this->isNewUser
+            ? '🎉 ¡Bienvenido a Open Comunidad!'
+            : '🔐 Tu enlace de acceso seguro';
+    }
+
+    private function getGreeting(): string
+    {
+        return $this->isNewUser
+            ? '¡Hola y bienvenido!'
+            : '¡Hola!';
     }
 }

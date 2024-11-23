@@ -23,15 +23,16 @@ class MagicLoginController extends Controller
             $user = User::create([
                 'email' => $request->email,
                 'name' => explode('@', $request->email)[0],
-                'password' => bcrypt(Str::random(24))
+                'password' => bcrypt(Str::random(24)),
+                'onboarding' => false
             ]);
         }
 
         $generator = new LoginUrl($user);
         $url = $generator->generate();
 
-        $user->notify(new MagicLoginLink($url));
+        $user->notify(new MagicLoginLink($url, !$user->onboarding ? true : false));
 
-        return back()->with('status', 'We have emailed you a magic login link!');
+        return redirect()->back()->with('status', !$user->onboarding ? 'needs_onboarding' : 'success');
     }
 }
