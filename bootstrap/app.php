@@ -12,10 +12,6 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->replace(
-            \Illuminate\Http\Middleware\TrustProxies::class,
-            \Monicahq\Cloudflare\Http\Middleware\TrustProxies::class
-        );
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
@@ -25,6 +21,14 @@ return Application::configure(basePath: dirname(__DIR__))
             'onboarding.complete' => \App\Http\Middleware\OnboardingIsComplete::class,
         ]);
 
+        $middleware->trustProxies(headers: Request::HEADER_X_FORWARDED_FOR |
+            Request::HEADER_X_FORWARDED_HOST |
+            Request::HEADER_X_FORWARDED_PORT |
+            Request::HEADER_X_FORWARDED_PROTO |
+            Request::HEADER_X_FORWARDED_AWS_ELB
+        );
+
+        $middleware->trustProxies(at: '*');
         //
     })
     ->withExceptions(function (Exceptions $exceptions) {
