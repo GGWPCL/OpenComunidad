@@ -29,9 +29,6 @@ export default function Welcome({
                                     <Link href={route('login')} className="btn-secondary">
                                         Iniciar Sesión
                                     </Link>
-                                    <Link href={route('register')} className="btn-primary">
-                                        Registrarse
-                                    </Link>
                                 </>
                             )}
                         </div>
@@ -115,7 +112,7 @@ export default function Welcome({
                                     slug: "edificio-las-palmas"
                                 },
                                 {
-                                    name: "Condominio El Bosque", 
+                                    name: "Condominio El Bosque",
                                     address: "Calle El Bosque 456, Santiago",
                                     slug: "condominio-el-bosque"
                                 },
@@ -140,7 +137,7 @@ export default function Welcome({
                                     slug: "switch-345"
                                 }
                             ].map((community, index) => (
-                                <a 
+                                <a
                                     href={`/communities/${community.slug}`}
                                     key={index}
                                     className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer block w-full"
