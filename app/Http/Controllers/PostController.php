@@ -137,6 +137,7 @@ class PostController extends Controller
             'votes' => (int) $post->upVotedBy()?->count(),
             'isUpVoted' => $user instanceof User && $user->upVotedPosts()?->where('post_id', $post->id)->exists(),
             'isFollowed' => $user instanceof User && $user->followedPosts()?->where('post_id', $post->id)->exists(),
+            'isApproved' => $post->is_approved,
             'createdAt' => $post->created_at->diffForHumans()
         ];
 
