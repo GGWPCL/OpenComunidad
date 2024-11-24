@@ -193,8 +193,11 @@ export default function Show({ auth, post, comments, community }: Props) {
                                         </div>
 
                                         <div className="flex items-center gap-4 text-gray-500 text-sm">
-                                            <div>Por {'un administrador de la comunidad'}</div>
+                                            <div className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs">
+                                                Comentario
+                                            </div>
                                             <div>• {comment.createdAt.charAt(0).toUpperCase() + comment.createdAt.slice(1)}</div>
+                                            <div>• Por un administrador de la comunidad</div>
                                         </div>
                                     </CardContent>
                                 </Card>
