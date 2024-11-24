@@ -114,7 +114,7 @@ export default function Show({ auth, post, comments, community }: Props) {
         >
             <Head title={`${post.title} - ${community.name}`} />
 
-            <div className="py-12">
+            <div className="py-12 text-center sm:text-left mx-6 sm:mx-0">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <Card>
                         <CardTitle className="px-6 pt-6 text-xl">{post.title}</CardTitle>
@@ -123,7 +123,7 @@ export default function Show({ auth, post, comments, community }: Props) {
                                 {post.content}
                             </div>
 
-                            <div className="flex items-center gap-4 text-gray-500">
+                            <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-4 text-gray-500">
                                 <div className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs">
                                     {post.category}
                                 </div>
@@ -134,20 +134,20 @@ export default function Show({ auth, post, comments, community }: Props) {
                     </Card>
 
                     {/* Comments Section */}
-                    <div className="mt-8 space-y-4">
+                    <div className="mt-8 space-y-4 text-center sm:text-left">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">
                             Comentarios ({Array.isArray(comments) ? comments.length : 0})
                         </h3>
 
                         {Array.isArray(comments) && comments.length > 0 ? (
                             comments.map((comment) => (
-                                <Card key={comment.id} className="ml-8">
+                                <Card key={comment.id} className="mx-6 sm:mx-0 sm:ml-8">
                                     <CardContent className="p-4">
                                         <div className="prose max-w-none mb-4">
                                             {comment.content}
                                         </div>
 
-                                        <div className="flex items-center gap-4 text-gray-500 text-sm">
+                                        <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-4 text-gray-500 text-sm">
                                             <div className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs">
                                                 Comentario
                                             </div>
@@ -163,34 +163,38 @@ export default function Show({ auth, post, comments, community }: Props) {
                     </div>
 
                     {auth.user && (auth.roles.is_manager || auth.roles.is_admin) && (
-                        <Card className="mt-8 space-y-4">
-                            <CardContent className="p-6">
-                                <h3 className="text-lg font-semibold mb-4">Añadir un comentario</h3>
-                                <div className="space-y-4">
-                                    <div>
-                                        <Label>Contenido</Label>
-                                        <div className="mt-1 border rounded-md">
-                                            <Toolbar editor={commentEditor} />
-                                            <EditorContent
-                                                editor={commentEditor}
-                                                className="prose max-w-none p-4"
-                                            />
-                                        </div>
-                                        {errors.original_content && (
-                                            <p className="text-sm text-red-600 mt-1">{errors.original_content}</p>
-                                        )}
-                                    </div>
+                        <div className="mt-8 space-y-4 text-center sm:text-left">
 
-                                    <Button
-                                        type="button"
-                                        disabled={commentProcessing}
-                                        onClick={handleCommentSubmit}
-                                    >
-                                        Publicar comentario
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Añadir un comentario</h3>
+                            <Card className="mt-8 space-y-4">
+                                <CardContent className="p-6">
+                                    <div className="space-y-4">
+                                        <div>
+                                            <Label>Contenido</Label>
+                                            <div className="mt-1 border rounded-md">
+                                                <Toolbar editor={commentEditor} />
+                                                <EditorContent
+                                                    editor={commentEditor}
+                                                    className="prose max-w-none p-4"
+                                                />
+                                            </div>
+                                            {errors.original_content && (
+                                                <p className="text-sm text-red-600 mt-1">{errors.original_content}</p>
+                                            )}
+                                        </div>
+
+                                        <Button
+                                            type="button"
+                                            disabled={commentProcessing}
+                                            onClick={handleCommentSubmit}
+                                            className="w-full sm:w-auto"
+                                        >
+                                            Publicar comentario
+                                        </Button>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
                     )}
                 </div>
             </div>
