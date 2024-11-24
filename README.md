@@ -1,66 +1,86 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# OpenComunidad
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+OpenComunidad is a community management platform built during a hackathon that enables neighborhoods and residential communities to better organize, communicate, and make collective decisions.
 
-## About Laravel
+## 🏆 Hackathon Project
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+This project was built during Platanus Hack 24 with the goal of optimizing real estate investments through better community management. By fostering healthier, more organized communities, the platform helps:
+- Reduce vacancy rates through improved resident satisfaction
+- Increase rent retention by building stronger community bonds
+- Lower operational costs via efficient communication
+- Minimize risks through better community oversight and decision-making
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+While built in a short time frame, we aimed to create a foundation that benefits both property investors and residents alike.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-## Learning Laravel
+## 🌟 Features
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Community Management
+- **Multiple Communities**: Users can join and participate in different residential communities
+- **Role-Based Access**: Supports different roles (Admin, Manager, Neighbor) with varying permissions
+- **Custom Branding**: Communities can have their own logos and banners
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### Posts & Communication
+- **Rich Text Posts**: Create and share posts with markdown support
+- **Categorization**: Organize posts by categories for better navigation
+- **Approval System**: Moderation system for post approval by community admins
+- **AI-Powered Content Moderation**:
+  - LLM-based content analysis ensures constructive communication
+  - Automatic detection and filtering of hostile or threatening content
+  - Promotes balanced and solution-oriented discussions
+- **Interactive Elements**: 
+  - Upvoting system
+  - Follow/unfollow posts for updates
+  - Comment system for discussions
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Community Decision Making
+- **Poll System**: 
+  - Create polls with multiple options
+  - Real-time vote counting
+  - Countdown timers for voting deadlines
+  - Results visualization with animated progress bars
+  - Admin-only early results viewing
 
-## Laravel Sponsors
+### User Experience
+- **Responsive Design**: Works seamlessly across desktop and mobile devices
+- **Real-time Updates**: Dynamic content updates without page refreshes
+- **Intuitive Navigation**: Easy-to-use interface for all user types
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## 🛠 Tech Stack
 
-### Premium Partners
+- **Backend**: Laravel PHP Framework
+- **Frontend**: React with TypeScript
+- **State Management**: Inertia.js
+- **Styling**: Tailwind CSS
+- **Rich Text**: TipTap Editor
+- **Animations**: Framer Motion
+- **File Storage**: R2 Compatible Storage
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+## 🚀 Getting Started
 
-## Contributing
+1. Clone the repository
+2. Install dependencies
+3. Set up your environment variables
+4. Run migrations
+5. Start the development servers
+```
+php artisan serve
+npm run dev
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
 
-## Code of Conduct
+## 🤝 Contributing
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+This project was built during a hackathon but we welcome contributions! Feel free to:
+- Report bugs
+- Suggest features
+- Submit pull requests
 
-## Security Vulnerabilities
+## 📝 License
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+[MIT License](LICENSE.md)
 
-## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+
+Built with ❤️ for communities
