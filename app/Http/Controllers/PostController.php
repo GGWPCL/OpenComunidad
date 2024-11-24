@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use App\Services\ContentModerationService;
+use Illuminate\Support\Facades\Log;
 
 class PostController extends Controller
 {
@@ -89,6 +90,16 @@ class PostController extends Controller
     public function show(Post $post)
     {
         $user = Auth::user();
+        $isAdmin = false;
+
+        if ($user) {
+            $isAdmin = $post->community->users()
+                ->where('user_id', $user->id)
+                ->where('is_admin', true)
+                ->exists();
+        }
+
+
 
         $postData = [
             'id' => $post->id,
@@ -117,6 +128,7 @@ class PostController extends Controller
             'community' => [
                 'name' => $post->community->name,
                 'slug' => $post->community->slug,
+                'isAdmin' => $isAdmin,
             ]
         ]);
     }

@@ -1,16 +1,18 @@
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardTitle } from '@/Components/ui/card';
 import { Label } from '@/Components/ui/label';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Toolbar from './Toolbar';
 import { Markdown } from 'tiptap-markdown';
 import UpVote from '@/Components/UpVote';
 import FollowPost from '@/Components/FollowPost';
+import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 interface Post {
     id: number;
@@ -23,6 +25,13 @@ interface Post {
     isFollowed: boolean;
     comments: Comment[];
     createdAt: string;
+    poll?: {
+        question: string;
+        options: PollOption[];
+        total_votes: number;
+        closed: boolean;
+        ends_at: string;
+    };
 }
 
 interface Comment {
@@ -30,6 +39,12 @@ interface Comment {
     content: string;
     author: number;
     createdAt: string;
+}
+
+interface PollOption {
+    id: number;
+    text: string;
+    votes: number;
 }
 
 interface Props {
@@ -46,11 +61,45 @@ interface Props {
     community: {
         name: string;
         slug: string;
+        isAdmin: boolean;
     };
 }
 
+const calculateTimeLeft = (endDate: string) => {
+    const difference = new Date(endDate).getTime() - new Date().getTime();
+
+    if (difference <= 0) {
+        return null;
+    }
+
+    return {
+        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((difference / 1000 / 60) % 60),
+        seconds: Math.floor((difference / 1000) % 60)
+    };
+};
+
 export default function Show({ auth, post, comments, community }: Props) {
+    const mockPoll = {
+        question: "¿Qué día prefieren para la próxima reunión de vecinos?",
+        options: [
+            { id: 1, text: "Sábado por la mañana", votes: 12 },
+            { id: 2, text: "Sábado por la tarde", votes: 8 },
+            { id: 3, text: "Domingo por la mañana", votes: 15 },
+            { id: 4, text: "Domingo por la tarde", votes: 5 },
+        ],
+        total_votes: 40,
+        closed: false,
+        deadline: "2024-11-30T23:59:59"
+    };
+
     const [postState, setPostState] = useState<Post>(post);
+    const [selectedOption, setSelectedOption] = useState<number | null>(null);
+    const [hasVoted, setHasVoted] = useState(false);
+    const [timeLeft, setTimeLeft] = useState(calculateTimeLeft(mockPoll.deadline));
+
+    const isAdmin = (usePage().props as { community?: { isAdmin: boolean } }).community?.isAdmin;
 
     const commentEditor = useEditor({
         extensions: [
@@ -79,13 +128,35 @@ export default function Show({ auth, post, comments, community }: Props) {
             onSuccess: () => {
                 commentEditor?.commands.setContent('');
                 resetComment();
-                // Optionally refresh the page or update comments list
                 router.reload();
             },
         });
     };
 
     const Layout = auth.user ? AuthenticatedLayout : GuestLayout;
+
+
+    const handleVote = (optionId: number) => {
+        if (!hasVoted) {
+            setSelectedOption(optionId);
+            setHasVoted(true);
+        }
+    };
+
+    useEffect(() => {
+        if (!mockPoll.closed) {
+            const timer = setInterval(() => {
+                const remainingTime = calculateTimeLeft(mockPoll.deadline);
+                setTimeLeft(remainingTime);
+
+                if (!remainingTime) {
+                    clearInterval(timer);
+                }
+            }, 1000);
+
+            return () => clearInterval(timer);
+        }
+    }, [mockPoll.deadline, mockPoll.closed]);
 
     return (
         <Layout
@@ -132,6 +203,87 @@ export default function Show({ auth, post, comments, community }: Props) {
                                 <div>•</div>
                                 <div>Por un vecino de la comunidad</div>
                             </div>
+
+                            {mockPoll && (
+                                <Card className="mb-8 mt-8">
+                                    <CardContent className="p-6">
+                                        <h3 className="text-xl font-bold mb-4">{mockPoll.question}</h3>
+                                        <div className="space-y-3">
+                                            {mockPoll.options.map((option) => {
+                                                const percentage = (option.votes / mockPoll.total_votes) * 100;
+                                                const showResults = mockPoll.closed || (auth.user && auth.roles.is_admin);
+
+                                                return (
+                                                    <div
+                                                        key={option.id}
+                                                        className={cn(
+                                                            "relative cursor-pointer rounded-lg border p-4 transition-colors",
+                                                            !mockPoll.closed && !hasVoted ? "hover:bg-gray-50" : "cursor-default",
+                                                            selectedOption === option.id && "border-blue-500 bg-blue-50"
+                                                        )}
+                                                        onClick={() => !mockPoll.closed && handleVote(option.id)}
+                                                    >
+                                                        <div className="relative z-10 flex justify-between">
+                                                            <span>{option.text}</span>
+                                                            {showResults && (
+                                                                <span className="font-medium">
+                                                                    {percentage.toFixed(1)}%
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        {showResults && (
+                                                            <motion.div
+                                                                initial={{ width: 0 }}
+                                                                animate={{ width: `${percentage}%` }}
+                                                                transition={{ duration: 0.5, ease: "easeOut" }}
+                                                                className="absolute left-0 top-0 h-full bg-blue-100 rounded-lg"
+                                                                style={{ zIndex: 0 }}
+                                                            />
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                        <div className="mt-4 text-sm text-gray-500 text-center">
+                                            {mockPoll.closed ? (
+                                                "Esta encuesta está cerrada"
+                                            ) : hasVoted ? (
+                                                <>
+                                                    <div>{`${mockPoll.total_votes} votos totales`}</div>
+                                                    <div className="mt-1">
+                                                        {timeLeft ? (
+                                                            <div className="font-medium">
+                                                                Tiempo restante: {timeLeft.days > 0 ? `${timeLeft.days}d ` : ''}
+                                                                {String(timeLeft.hours).padStart(2, '0')}:
+                                                                {String(timeLeft.minutes).padStart(2, '0')}:
+                                                                {String(timeLeft.seconds).padStart(2, '0')}
+                                                            </div>
+                                                        ) : (
+                                                            "La votación ha terminado"
+                                                        )}
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <div>Haga clic en una opción para votar</div>
+                                                    <div className="mt-1">
+                                                        {timeLeft ? (
+                                                            <div className="font-medium">
+                                                                Tiempo restante: {timeLeft.days > 0 ? `${timeLeft.days}d ` : ''}
+                                                                {String(timeLeft.hours).padStart(2, '0')}:
+                                                                {String(timeLeft.minutes).padStart(2, '0')}:
+                                                                {String(timeLeft.seconds).padStart(2, '0')}
+                                                            </div>
+                                                        ) : (
+                                                            "La votación ha terminado"
+                                                        )}
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )}
                         </CardContent>
                     </Card>
 

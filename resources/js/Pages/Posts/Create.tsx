@@ -12,6 +12,8 @@ import Toolbar from './Toolbar';
 import { Markdown } from 'tiptap-markdown';
 import { useToast } from "@/hooks/use-toast"
 import axios from 'axios';
+import { PlusCircle, Trash2, XCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface Category {
     id: number;
@@ -23,7 +25,21 @@ export default function Create({ categories }: { categories: Category[] }) {
 
     const [selectedCategory] = useState(() => {
         const params = new URLSearchParams(window.location.search);
-        return params.get('category') || '';
+        const category = params.get('category');
+
+        const categoryMap: { [key: string]: number } = {
+            'proposals': 1,
+            'polls': 2,
+            'imagine': 3,
+            'requests': 4
+        };
+
+        if (!category || !(category in categoryMap)) {
+            router.replace('/');
+            return '';
+        }
+
+        return categoryMap[category].toString();
     });
 
     const editor = useEditor({
@@ -44,6 +60,9 @@ export default function Create({ categories }: { categories: Category[] }) {
         original_title: '',
         original_content: '',
         category_id: selectedCategory,
+        has_poll: false,
+        poll_question: '',
+        poll_options: ['', '']
     });
 
     // Add new state for rate limiting
@@ -109,9 +128,29 @@ export default function Create({ categories }: { categories: Category[] }) {
         }, 1000);
     };
 
+    const addPollOption = () => {
+        if (data.poll_options.length < 6) {
+            setData('poll_options', [...data.poll_options, '']);
+        }
+    };
+
+    const removePollOption = (index: number) => {
+        if (data.poll_options.length > 2) {
+            const newOptions = [...data.poll_options];
+            newOptions.splice(index, 1);
+            setData('poll_options', newOptions);
+        }
+    };
+
+    const updatePollOption = (index: number, value: string) => {
+        const newOptions = [...data.poll_options];
+        newOptions[index] = value;
+        setData('poll_options', newOptions);
+    };
+
     return (
         <AuthenticatedLayout
-            header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Create new post</h2>}
+            header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Crear nuevo post | {categories.find(category => category.id === parseInt(selectedCategory))?.display_name}</h2>}
         >
             <Head title="Create Post" />
 
@@ -135,12 +174,12 @@ export default function Create({ categories }: { categories: Category[] }) {
                                 )}
                             </div>
 
-                            <div className="space-y-2">
+                            <div className="space-y-2 hidden">
                                 <Label htmlFor="category" className="text-lg font-medium">
                                     Categoría
                                 </Label>
                                 <Select
-                                    defaultValue={selectedCategory}
+                                    value={data.category_id || selectedCategory}
                                     onValueChange={(value) => setData('category_id', value)}
                                 >
                                     <SelectTrigger className="text-lg">
@@ -178,6 +217,80 @@ export default function Create({ categories }: { categories: Category[] }) {
                                     <p className="text-sm text-red-600">{errors.original_content}</p>
                                 )}
                             </div>
+                            {selectedCategory === '2' && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="space-y-4"
+                                >
+                                    <div className="space-y-2">
+                                        <Label htmlFor="poll-question" className="text-lg font-medium">
+                                            Pregunta de la encuesta
+                                        </Label>
+                                        <Input
+                                            id="poll-question"
+                                            value={data.poll_question}
+                                            onChange={(e) => setData('poll_question', e.target.value)}
+                                            placeholder="Escribe la pregunta de tu encuesta"
+                                            className="text-lg"
+                                        />
+                                        {errors.poll_question && (
+                                            <p className="text-sm text-red-600">{errors.poll_question}</p>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <Label className="text-lg font-medium">Opciones</Label>
+                                        {data.poll_options.map((option, index) => (
+                                            <div key={index} className="flex items-center gap-2">
+                                                <Input
+                                                    value={option}
+                                                    onChange={(e) => updatePollOption(index, e.target.value)}
+                                                    placeholder={`Opción ${index + 1}`}
+                                                    className="text-lg"
+                                                />
+                                                {data.poll_options.length > 2 && (
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => removePollOption(index)}
+                                                    >
+                                                        <Trash2 className="h-5 w-5 text-red-500" />
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        ))}
+                                        {errors.poll_options && (
+                                            <p className="text-sm text-red-600">{errors.poll_options}</p>
+                                        )}
+                                    </div>
+
+                                    <div className="flex justify-center">
+                                        {data.poll_options.length < 6 && (
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={addPollOption}
+                                                className="flex items-center gap-2"
+                                            >
+                                                <PlusCircle className="h-5 w-5" />
+                                                Añadir opción
+                                            </Button>
+                                        )}
+                                    </div>
+
+                                    <div className="rounded-lg bg-blue-50 p-4 text-sm text-blue-600">
+                                        <ul className="list-disc list-inside space-y-1">
+                                            <li>Mínimo 2 opciones, máximo 6 opciones</li>
+                                            <li>Cada opción debe ser única</li>
+                                            <li>La encuesta no se puede editar después de publicar</li>
+                                        </ul>
+                                    </div>
+                                </motion.div>
+                            )}
 
                             <Button
                                 type="button"
