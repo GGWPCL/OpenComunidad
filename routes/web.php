@@ -27,22 +27,26 @@ Route::post('/posts/{post}/comments', [CommentController::class, 'store'])->name
 
 Route::middleware(['auth', 'onboarding.complete'])->group(function () {
     Route::get('/dashboard', function () {
-        $userCommunities = auth()->user()->communities()->with('logo', 'banner')->get();
+        $userCommunities = auth()->user()->communities()
+            ->with(['logo', 'banner'])
+            ->get()
+            ->each(function($community) {
+                processMediaUrls($community);
+            });
 
-        $userCommunities = $userCommunities->map(function ($community) {
-            if ($community->logo) {
-                $path = parse_url($community->logo->url, PHP_URL_PATH);
-                $community->logo->url = 'https://storage.opencomunidad.cl' . $path;
-            }
-            if ($community->banner) {
-                $path = parse_url($community->banner->url, PHP_URL_PATH);
-                $community->banner->url = 'https://storage.opencomunidad.cl' . $path;
-            }
-            return $community;
-        });
+        $otherCommunities = Community::whereDoesntHave('users', function($query) {
+                $query->where('user_id', auth()->id());
+            })
+            ->with(['logo', 'banner'])
+            ->get()
+            ->each(function($community) {
+                processMediaUrls($community);
+                $community->view_only = true;
+            });
 
         return Inertia::render('Dashboard', [
             'userCommunities' => $userCommunities,
+            'otherCommunities' => $otherCommunities,
             'isAdmin' => auth()->user()->communities()->wherePivot('is_admin', true)->exists(),
         ]);
     })->name('dashboard');
@@ -62,3 +66,14 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__ . '/auth.php';
+
+function processMediaUrls($community) {
+    $baseUrl = 'https://storage.opencomunidad.cl';
+
+    foreach (['logo', 'banner'] as $mediaType) {
+        if ($community->{$mediaType}) {
+            $path = parse_url($community->{$mediaType}->url, PHP_URL_PATH);
+            $community->{$mediaType}->url = $baseUrl . $path;
+        }
+    }
+}

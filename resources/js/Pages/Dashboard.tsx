@@ -19,9 +19,10 @@ interface Community {
     banner?: {
         url: string;
     };
+    view_only?: boolean;
 }
 
-export default function Dashboard({ isAdmin, userCommunities = [] }: { isAdmin: boolean, userCommunities: Community[] }) {
+export default function Dashboard({ isAdmin, userCommunities = [], otherCommunities = [] }: { isAdmin: boolean, userCommunities: Community[], otherCommunities: Community[] }) {
     const [editingCommunity, setEditingCommunity] = useState<Community | null>(null);
 
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -65,8 +66,9 @@ export default function Dashboard({ isAdmin, userCommunities = [] }: { isAdmin: 
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
+                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg mb-8">
                         <div className="p-6">
+                            <h3 className="text-xl font-semibold mb-4">Mis Comunidades</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {(userCommunities || []).map((community, index) => (
                                     <a
@@ -111,6 +113,7 @@ export default function Dashboard({ isAdmin, userCommunities = [] }: { isAdmin: 
                                                     Aprobación pendiente
                                                 </span>
                                             )}
+
                                             {isAdmin && (
                                                 <button
                                                     onClick={(e) => {
@@ -125,9 +128,66 @@ export default function Dashboard({ isAdmin, userCommunities = [] }: { isAdmin: 
                                         </div>
                                     </a>
                                 ))}
+
                             </div>
                         </div>
                     </div>
+
+                    {otherCommunities && otherCommunities.length > 0 && (
+                        <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
+                            <div className="border-t-4 border-blue-500 p-6">
+                                <h3 className="text-xl font-semibold mb-4">Otras Comunidades</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {otherCommunities.map((community, index) => (
+                                        <a
+                                            href={`/communities/${community.slug}`}
+                                            key={index}
+                                            className="bg-gray-50 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer block w-full"
+                                        >
+                                            <div className="h-32 w-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center relative">
+                                                {community.banner ? (
+                                                    <img
+                                                        src={community.banner.url}
+                                                        alt={`${community.name} banner`}
+                                                        className="absolute inset-0 w-full h-full object-cover opacity-75"
+                                                    />
+                                                ) : (
+                                                    <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-gray-100 to-gray-200" />
+                                                )}
+                                                {community.logo ? (
+                                                    <img
+                                                        src={community.logo.url}
+                                                        alt={community.name}
+                                                        className="w-24 h-24 rounded-full object-cover z-10 border-2 border-white shadow-md"
+                                                    />
+                                                ) : (
+                                                    <svg className="w-24 h-24 text-gray-400 z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                                    </svg>
+                                                )}
+                                            </div>
+                                            <div className="p-4">
+                                                <h3 className="text-lg font-semibold text-gray-700 mb-1">
+                                                    {community.name}
+                                                </h3>
+                                                <p className="text-sm text-gray-500 mb-2">
+                                                    {community.address}
+                                                </p>
+                                            </div>
+                                            {community.view_only && (
+                                                <span
+                                                    className="inline-block px-2 py-1 text-sm bg-gray-100 text-gray-800 rounded cursor-help"
+                                                    title="Solo puedes ver esta comunidad"
+                                                >
+                                                    Solo lectura
+                                                </span>
+                                            )}
+                                        </a>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 
