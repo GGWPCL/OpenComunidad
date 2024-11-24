@@ -43,7 +43,7 @@ class HandleInertiaRequests extends Middleware
                             'is_manager' => (bool) $community->pivot->is_manager,
                             'is_neighbor' => (bool) $community->pivot->is_neighbor,
                         ]];
-                    })->values()->all() : null,
+                    })->first() : null,
             ],
             'flash' => [
                 'message' => fn() => $request->session()->get('message'),
