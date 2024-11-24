@@ -147,9 +147,11 @@ export default function Show({ community, auth, categories, posts }: Props) {
     return (
         <Layout
             header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    {community?.name || "Comunidad"}
-                </h2>
+                !community.banner && !community.logo && (
+                    <h2 className="text-xl font-semibold leading-tight text-gray-800">
+                        {community?.name || "Comunidad"}
+                    </h2>
+                )
             }
         >
             <Head title={`${community?.name || 'Comunidad'} - Open Comunidad`} />
