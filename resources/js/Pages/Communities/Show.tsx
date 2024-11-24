@@ -242,8 +242,8 @@ export default function Show({ community, auth, categories, posts }: Props) {
                                                         <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs">
                                                             {post.category}
                                                         </span>
-                                                        <span>• Posted by {post.author}</span>
                                                         <span>• {post.createdAt}</span>
+                                                        <span>• por un <strong>vecino</strong> de la comunidad</span>
                                                     </div>
                                                     <h3 className="text-lg font-semibold mb-2">{post.title}</h3>
                                                     <p className="text-gray-600 mb-4">{post.content}</p>
