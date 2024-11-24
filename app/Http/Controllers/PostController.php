@@ -87,7 +87,7 @@ class PostController extends Controller
             'title' => $post->mutated_title,
             'content' => $post->mutated_content,
             'category' => $post->category?->display_name,
-            'author' => $post->author?->name,
+            'author' => $post->author?->id,
             'votes' => (int) $post->upVotedBy()?->count(),
             'isUpVoted' => $user instanceof User && $user->upVotedPosts()?->where('post_id', $post->id)->exists(),
             'isFollowed' => $user instanceof User && $user->followedPosts()?->where('post_id', $post->id)->exists(),
@@ -96,7 +96,7 @@ class PostController extends Controller
 
         $comments = $post->comments->sortBy('created_at')->map(fn($comment) => [
             'id' => $comment->id,
-            'author' => $comment->author?->name,
+            'author' => $comment->author?->id,
             'content' => $comment->mutated_content,
             'createdAt' => $comment->created_at->diffForHumans(),
         ])

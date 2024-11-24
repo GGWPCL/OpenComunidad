@@ -71,7 +71,7 @@ class CommunityController extends Controller
                     'title' => $post->mutated_title,
                     'content' => $post->mutated_content,
                     'category' => $post->category?->display_name,
-                    'author' => $post->author?->name,
+                    'author' => $post->author?->id,
                     'comments' => (int) $post->comments?->count(),
                     'votes' => (int) $post->upVotedBy()?->count(),
                     'isUpVoted' => $user instanceof User && $user->upVotedPosts()?->where('post_id', $post->id)->exists(),

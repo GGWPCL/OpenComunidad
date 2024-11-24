@@ -19,7 +19,7 @@ interface Post {
     title: string;
     content: string;
     category: string;
-    author: string;
+    author: number;
     votes: number;
     isUpVoted: boolean;
     isFollowed: boolean;
@@ -30,7 +30,7 @@ interface Post {
 interface Comment {
     id: number;
     content: string;
-    author: string | null;
+    author: number;
     createdAt: string;
 }
 

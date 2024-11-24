@@ -13,7 +13,7 @@ interface Post {
     title: string;
     content: string;
     category: string;
-    author: string;
+    author: number;
     votes: number;
     isUpVoted: boolean;
     comments: number;
