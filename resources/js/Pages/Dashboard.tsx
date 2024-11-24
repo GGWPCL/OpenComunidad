@@ -1,14 +1,58 @@
 import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { useState } from 'react';
+import { useForm } from '@inertiajs/react';
+import Modal from '@/Components/Modal';
+import InputLabel from '@/Components/InputLabel';
+import TextInput from '@/Components/TextInput';
+import InputError from '@/Components/InputError';
+import PrimaryButton from '@/Components/PrimaryButton';
 
 interface Community {
     name: string;
     address: string;
     slug: string;
     status: string;
+    logo?: {
+        url: string;
+    };
+    banner?: {
+        url: string;
+    };
 }
 
-export default function Dashboard({ userCommunities = [] }: { userCommunities: Community[] }) {
+export default function Dashboard({ isAdmin, userCommunities = [] }: { isAdmin: boolean, userCommunities: Community[] }) {
+    const [editingCommunity, setEditingCommunity] = useState<Community | null>(null);
+
+    const { data, setData, post, processing, errors, reset } = useForm({
+        name: '',
+        slug: '',
+        logo: null as File | null,
+        banner: null as File | null,
+    });
+
+    const openEditModal = (community: Community) => {
+        setEditingCommunity(community);
+        setData({
+            name: community.name,
+            slug: community.slug,
+            logo: null,
+            banner: null,
+        });
+    };
+
+    const closeModal = () => {
+        setEditingCommunity(null);
+        reset();
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        post(`/communities/${editingCommunity?.slug}`, {
+            onSuccess: () => closeModal(),
+        });
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -30,10 +74,27 @@ export default function Dashboard({ userCommunities = [] }: { userCommunities: C
                                         key={index}
                                         className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer block w-full"
                                     >
-                                        <div className="h-32 w-full bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 flex items-center justify-center">
-                                            <svg className="w-12 h-12 text-blue-500 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                            </svg>
+                                        <div className="h-32 w-full bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 flex items-center justify-center relative">
+                                            {community.banner ? (
+                                                <img
+                                                    src={community.banner.url}
+                                                    alt={`${community.name} banner`}
+                                                    className="absolute inset-0 w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800" />
+                                            )}
+                                            {community.logo ? (
+                                                <img
+                                                    src={community.logo.url}
+                                                    alt={community.name}
+                                                    className="w-24 h-24 rounded-full object-cover z-10 border-2 border-white shadow-md"
+                                                />
+                                            ) : (
+                                                <svg className="w-24 h-24 text-blue-500 dark:text-blue-400 z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                                </svg>
+                                            )}
                                         </div>
                                         <div className="p-4">
                                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
@@ -50,6 +111,17 @@ export default function Dashboard({ userCommunities = [] }: { userCommunities: C
                                                     Aprobación pendiente
                                                 </span>
                                             )}
+                                            {isAdmin && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        openEditModal(community);
+                                                    }}
+                                                    className="mt-2 text-sm text-blue-600 hover:text-blue-800"
+                                                >
+                                                    Editar comunidad
+                                                </button>
+                                            )}
                                         </div>
                                     </a>
                                 ))}
@@ -58,6 +130,64 @@ export default function Dashboard({ userCommunities = [] }: { userCommunities: C
                     </div>
                 </div>
             </div>
+
+            <Modal show={!!editingCommunity} onClose={closeModal}>
+                <form onSubmit={handleSubmit} className="p-6">
+                    <h2 className="text-lg font-medium mb-4">Editar Comunidad</h2>
+
+                    <div className="mb-4">
+                        <InputLabel htmlFor="name" value="Nombre" />
+                        <TextInput
+                            id="name"
+                            type="text"
+                            value={data.name}
+                            onChange={(e) => setData('name', e.target.value)}
+                            className="mt-1 block w-full"
+                        />
+                        <InputError message={errors.name} className="mt-2" />
+                    </div>
+
+                    <div className="mb-4">
+                        <InputLabel htmlFor="slug" value="Slug" />
+                        <TextInput
+                            id="slug"
+                            type="text"
+                            value={data.slug}
+                            onChange={(e) => setData('slug', e.target.value)}
+                            className="mt-1 block w-full"
+                        />
+                        <InputError message={errors.slug} className="mt-2" />
+                    </div>
+
+                    <div className="mb-4">
+                        <InputLabel htmlFor="logo" value="Logo" />
+                        <input
+                            type="file"
+                            id="logo"
+                            onChange={(e) => setData('logo', e.target.files?.[0] || null)}
+                            className="mt-1 block w-full"
+                        />
+                        <InputError message={errors.logo} className="mt-2" />
+                    </div>
+
+                    <div className="mb-4">
+                        <InputLabel htmlFor="banner" value="Banner" />
+                        <input
+                            type="file"
+                            id="banner"
+                            onChange={(e) => setData('banner', e.target.files?.[0] || null)}
+                            className="mt-1 block w-full"
+                        />
+                        <InputError message={errors.banner} className="mt-2" />
+                    </div>
+
+                    <div className="mt-6 flex justify-end">
+                        <PrimaryButton disabled={processing}>
+                            Guardar cambios
+                        </PrimaryButton>
+                    </div>
+                </form>
+            </Modal>
         </AuthenticatedLayout>
     );
 }

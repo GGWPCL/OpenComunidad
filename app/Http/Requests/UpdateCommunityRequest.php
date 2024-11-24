@@ -11,7 +11,11 @@ class UpdateCommunityRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        $community = $this->route('community');
+        return $community->users()
+            ->wherePivot('is_admin', true)
+            ->where('user_id', $this->user()->id)
+            ->exists();
     }
 
     /**

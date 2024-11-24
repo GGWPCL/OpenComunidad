@@ -12,6 +12,8 @@ use App\Models\Post;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Log;
+
 
 class CommunityController extends Controller
 {
@@ -44,17 +46,16 @@ class CommunityController extends Controller
      */
     public function show(Community $community)
     {
+        $user = Auth::user();
         $isMember = false;
-        if (Auth::check()) {
+        if ($user) {
             $isMember = $community->users()
-                ->where('user_id', Auth::id())
+                ->where('user_id', $user->id)
                 ->exists();
         }
 
         $categories = Category::select('display_name as name', 'internal_name', 'icon', 'description')->get();
         $selectedCategory = request()->query('category');
-
-        $user = Auth::user();
 
         $postsQuery = Post::where('community_id', $community->id);
         if ($selectedCategory) {
@@ -81,6 +82,7 @@ class CommunityController extends Controller
         return Inertia::render('Communities/Show', [
             'community' => [
                 'name' => $community->name,
+                'slug' => $community->slug,
                 'isMember' => $isMember,
                 'logo' => $community->logo?->url,
                 'banner' => $community->banner?->url,
@@ -103,38 +105,27 @@ class CommunityController extends Controller
      */
     public function update(UpdateCommunityRequest $request, Community $community)
     {
-        if ($request->hasFile('logo')) {
-            $path = $request->file('logo')->store('community-logos', 'r2');
-            $file = File::create([
-                'name' => $request->file('logo')->getClientOriginalName(),
-                'mime' => $request->file('logo')->getMimeType(),
-                'url' => Storage::disk('r2')->url($path),
-                'metadata' => [
-                    'size' => $request->file('logo')->getSize(),
-                    'path' => $path,
-                ],
-            ]);
-            $community->logo_id = $file->id;
+        $user = Auth::user();
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:communities,slug,' . $community->id,
+            'logo' => 'nullable|image|max:2048',
+            'banner' => 'nullable|image|max:2048',
+        ]);
+        foreach (['logo', 'banner'] as $fileType) {
+            if ($request->hasFile($fileType)) {
+                $file = $this->handleFileUpload(
+                    $request->file($fileType),
+                    "community-{$fileType}s"
+                );
+                $validated["{$fileType}_id"] = $file->id;
+            }
         }
 
-        if ($request->hasFile('banner')) {
-            $path = $request->file('banner')->store('community-banners', 'r2');
-            $file = File::create([
-                'name' => $request->file('banner')->getClientOriginalName(),
-                'mime' => $request->file('banner')->getMimeType(),
-                'url' => Storage::disk('r2')->url($path),
-                'metadata' => [
-                    'size' => $request->file('banner')->getSize(),
-                    'path' => $path,
-                ],
-            ]);
-            $community->banner_id = $file->id;
-        }
+        $community->update($validated);
 
-        $community->name = $request->name;
-        $community->save();
-
-        return redirect()->back();
+        return redirect()->back()->with('success', 'Community updated successfully');
     }
 
     /**
@@ -143,5 +134,21 @@ class CommunityController extends Controller
     public function destroy(Community $community)
     {
         //
+    }
+
+    /**
+     * Handle file upload and return the created File model
+     */
+    private function handleFileUpload($uploadedFile, string $directory): File
+    {
+        $fileName = time() . '_' . $uploadedFile->getClientOriginalName();
+        $file = $uploadedFile->storePubliclyAs($directory, $fileName, 'r2');
+
+        return File::create([
+            'path' => $file,
+            'mime' => $uploadedFile->getMimeType(),
+            'name' => (string) \Illuminate\Support\Str::uuid(),
+            'url' => Storage::disk('r2')->url($file),
+        ]);
     }
 }

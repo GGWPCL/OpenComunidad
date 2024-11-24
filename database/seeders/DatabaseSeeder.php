@@ -14,9 +14,14 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         try {
-            $community = Community::factory()->create([
+            Community::factory()->create([
                 'name' => 'Switch 345',
                 'slug' => 'switch-345',
+            ]);
+
+            Community::factory()->create([
+                'name' => 'Fintual Palace',
+                'slug' => 'fintual-palace',
             ]);
         } catch (\Exception $e) {
             dump('Error creating community:', $e->getMessage());
