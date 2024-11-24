@@ -63,6 +63,7 @@ export default function Create({ categories }: { categories: Category[] }) {
         has_poll: false,
         poll_question: '',
         poll_options: ['', ''],
+        poll_deadline: '',
     });
 
     // Add new state for rate limiting
@@ -99,7 +100,10 @@ export default function Create({ categories }: { categories: Category[] }) {
                 return;
             }
 
-            post(route('posts.store', { community }));
+            post(route('posts.store', { community }), {
+                preserveScroll: true,
+                onError: () => setIsVerifying(false),
+            });
         } catch (error) {
             setIsVerifying(false);
             console.error('Preflight check failed:', error);
@@ -241,6 +245,23 @@ export default function Create({ categories }: { categories: Category[] }) {
                                         )}
                                     </div>
 
+                                    <div className="space-y-2">
+                                        <Label htmlFor="poll-deadline" className="text-lg font-medium">
+                                            Fecha límite de la encuesta
+                                        </Label>
+                                        <Input
+                                            id="poll-deadline"
+                                            type="datetime-local"
+                                            value={data.poll_deadline}
+                                            onChange={(e) => setData('poll_deadline', e.target.value)}
+                                            min={new Date().toISOString().slice(0, 16)}
+                                            className="text-lg"
+                                        />
+                                        {errors.poll_deadline && (
+                                            <p className="text-sm text-red-600">{errors.poll_deadline}</p>
+                                        )}
+                                    </div>
+
                                     <div className="space-y-3">
                                         <Label className="text-lg font-medium">Opciones</Label>
                                         {data.poll_options.map((option, index) => (
@@ -287,6 +308,7 @@ export default function Create({ categories }: { categories: Category[] }) {
                                             <li>Mínimo 2 opciones, máximo 6 opciones</li>
                                             <li>Cada opción debe ser única</li>
                                             <li>La encuesta no se puede editar después de publicar</li>
+                                            <li>La fecha límite debe ser en el futuro</li>
                                         </ul>
                                     </div>
                                 </motion.div>

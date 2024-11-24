@@ -95,10 +95,28 @@ class ContentModerationService
             if ($response->successful()) {
                 $result = $response->json('result.response');
                 if (is_string($result)) {
-                    $cleanResult = preg_replace('/```json\s*|\s*```/', '', $result);
-                    $decodedResult = json_decode($cleanResult, true);
+                    $cleanResult = preg_replace('/```json\s*|\s*```/', '', trim($result));
+
+                    try {
+                        $decodedResult = json_decode($cleanResult, true, 512, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException $e) {
+                        try {
+                            $decodedResult = json_decode(stripslashes($cleanResult), true, 512, JSON_THROW_ON_ERROR);
+                        } catch (\JsonException $e2) {
+                            Log::error('JSON parsing failed after both attempts', [
+                                'error' => $e2->getMessage(),
+                                'result' => $result,
+                                'cleaned' => $cleanResult
+                            ]);
+                            return null;
+                        }
+                    }
+
                     if (isset($decodedResult['message']) && isset($decodedResult['ready'])) {
-                        return json_encode($decodedResult);
+                        if (is_string($decodedResult['ready'])) {
+                            $decodedResult['ready'] = filter_var($decodedResult['ready'], FILTER_VALIDATE_BOOLEAN);
+                        }
+                        return json_encode($decodedResult, JSON_THROW_ON_ERROR);
                     }
                 }
             }

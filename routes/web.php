@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\OnboardingController;
 use App\Models\Community;
 use App\Http\Controllers\CommentController;
 use App\Utils\MediaProcessor;
+use App\Http\Controllers\PollController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -57,6 +58,8 @@ Route::middleware(['auth', 'onboarding.complete'])->group(function () {
     Route::post('/posts/{post}/follow', [PostController::class, 'follow'])->name('posts.follow');
     Route::post('/posts/{post}/comments', [CommentController::class, 'store'])->name('comments.store');
     Route::post('/posts/preflight', [PostController::class, 'preflight'])->name('posts.preflight');
+
+    Route::post('/polls/{pollOption}/vote', [PollController::class, 'vote'])->name('polls.vote');
 });
 
 Route::middleware('auth')->group(function () {

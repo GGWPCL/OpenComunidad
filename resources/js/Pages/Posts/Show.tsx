@@ -13,6 +13,9 @@ import UpVote from '@/Components/UpVote';
 import FollowPost from '@/Components/FollowPost';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import axios from 'axios';
+import { useToast } from "@/hooks/use-toast"
+import { Badge } from "@/Components/ui/badge";
 
 interface Post {
     id: number;
@@ -39,6 +42,7 @@ interface PollOption {
     id: number;
     text: string;
     votes: number;
+    hasVoted: boolean;
 }
 
 interface Props {
@@ -86,11 +90,12 @@ const calculateTimeLeft = (endDate?: string) => {
 };
 
 export default function Show({ auth, post, poll, comments, community }: Props) {
-
+    const { toast } = useToast();
     const [postState, setPostState] = useState<Post>(post);
     const [selectedOption, setSelectedOption] = useState<number | null>(null);
     const [hasVoted, setHasVoted] = useState(false);
     const [timeLeft, setTimeLeft] = useState(calculateTimeLeft(poll?.deadline));
+    const [pollState, setPoll] = useState(poll);
 
     const isAdmin = (usePage().props as { community?: { isAdmin: boolean } }).community?.isAdmin;
 
@@ -129,10 +134,22 @@ export default function Show({ auth, post, poll, comments, community }: Props) {
     const Layout = auth.user ? AuthenticatedLayout : GuestLayout;
 
 
-    const handleVote = (optionId: number) => {
-        if (!hasVoted) {
-            setSelectedOption(optionId);
-            setHasVoted(true);
+    const handleVote = async (optionId: number) => {
+        if (!auth.user || hasVoted || poll?.closed) return;
+
+        try {
+            const response = await axios.post(route('polls.vote', optionId));
+            const { total_votes, options } = response.data;
+
+            router.reload();
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                toast({
+                    title: "Error",
+                    description: error.response?.data.message || "No se pudo registrar tu voto",
+                    variant: "destructive",
+                });
+            }
         }
     };
 
@@ -217,12 +234,20 @@ export default function Show({ auth, post, poll, comments, community }: Props) {
                                                         className={cn(
                                                             "relative cursor-pointer rounded-lg border p-4 transition-colors",
                                                             !poll?.closed && !hasVoted ? "hover:bg-gray-50" : "cursor-default",
+                                                            option.hasVoted ? "border-blue-500 bg-blue-50" : "",
                                                             selectedOption === option.id && "border-blue-500 bg-blue-50"
                                                         )}
                                                         onClick={() => !poll?.closed && handleVote(option.id)}
                                                     >
-                                                        <div className="relative z-10 flex justify-between">
-                                                            <span>{option.text}</span>
+                                                        <div className="relative z-10 flex justify-between items-center">
+                                                            <div className="flex items-center gap-2">
+                                                                <span>{option.text}</span>
+                                                                {option.hasVoted && (
+                                                                    <Badge variant="secondary" className="text-xs">
+                                                                        Tu voto
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
                                                             {showResults && (
                                                                 <span className="font-medium">
                                                                     {percentage.toFixed(1)}%
@@ -245,27 +270,11 @@ export default function Show({ auth, post, poll, comments, community }: Props) {
                                         <div className="mt-4 text-sm text-gray-500 text-center">
                                             {poll?.closed ? (
                                                 "Esta encuesta está cerrada"
-                                            ) : hasVoted ? (
-                                                <>
-                                                    <div>{`${poll?.total_votes} votos totales`}</div>
-                                                    <div className="mt-1">
-                                                        {timeLeft ? (
-                                                            <div className="font-medium">
-                                                                Tiempo restante: {timeLeft.days > 0 ? `${timeLeft.days}d ` : ''}
-                                                                {String(timeLeft.hours).padStart(2, '0')}:
-                                                                {String(timeLeft.minutes).padStart(2, '0')}:
-                                                                {String(timeLeft.seconds).padStart(2, '0')}
-                                                            </div>
-                                                        ) : (
-                                                            "La votación ha terminado"
-                                                        )}
-                                                    </div>
-                                                </>
                                             ) : (
                                                 <>
                                                     <div>Haga clic en una opción para votar</div>
                                                     <div className="mt-1">
-                                                        {timeLeft ? (
+                                                        {!poll?.closed && timeLeft ? (
                                                             <div className="font-medium">
                                                                 Tiempo restante: {timeLeft.days > 0 ? `${timeLeft.days}d ` : ''}
                                                                 {String(timeLeft.hours).padStart(2, '0')}:

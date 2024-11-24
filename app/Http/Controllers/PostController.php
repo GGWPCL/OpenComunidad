@@ -38,20 +38,18 @@ class PostController extends Controller
             'original_title' => 'required|string|max:255',
             'original_content' => 'required|string',
             'category_id' => 'required|exists:categories,id',
-
-            'poll' => 'nullable|array',
-            'poll_question' => 'required_with:poll|string|max:255',
-            // 'poll_deadline' => 'required_with:poll|date', // TODO: get from request
-            'poll_options' => 'required_with:poll|array|min:2|max:6',
-            'poll_options.*' => 'required_with:poll|string|max:255',
+            'poll_question' => 'required_if:category_id,2|string|max:255',
+            'poll_deadline' => 'required_if:category_id,2|date',
+            'poll_options' => 'required_if:category_id,2|array|min:2|max:6',
+            'poll_options.*' => 'required|string|max:255|distinct',
         ]);
 
         // Extract post data
         $postData = [
             'original_title' => $validated['original_title'],
-            'mutated_title' => $this->contentModerationService->moderateContent($validated['original_title']) ?? $validated['original_title'], // TODO: how to handle this?
+            'mutated_title' => $validated['original_title'],
             'original_content' => $validated['original_content'],
-            'mutated_content' => $this->contentModerationService->moderateContent($validated['original_content']) ?? $validated['original_content'], // TODO: how to handle this?
+            'mutated_content' => $validated['original_content'],
             'category_id' => $validated['category_id'],
             'author_id' => $request->user()->id,
             'community_id' => Community::where('slug', $request->community)->firstOrFail()->id,
@@ -59,19 +57,19 @@ class PostController extends Controller
 
         $post = Post::create($postData);
 
-        if (isset($validated['poll_question'])) {
+        if ($validated['category_id'] == 2) {
             $pollData = [
                 'post_id' => $post->id,
                 'original_content' => $validated['poll_question'],
-                'mutated_content' => $this->contentModerationService->moderateContent($validated['poll_question']) ?? $validated['poll_question'], // TODO: how to handle this?
-                'deadline' => new DateTime('+7 days'), // TODO: get from request
+                'mutated_content' => $validated['poll_question'],
+                'deadline' => $validated['poll_deadline']
             ];
             $poll = Poll::create($pollData);
 
-            foreach ($validated['poll_options'] ?? [] as $option_title) {
+            foreach ($validated['poll_options'] as $option_title) {
                 $poll->options()->create([
                     'original_title' => $option_title,
-                    'mutated_title' => $this->contentModerationService->moderateContent($option_title) ?? $option_title, // TODO: how to handle this?
+                    'mutated_title' => $option_title,
                 ]);
             }
         }
@@ -161,6 +159,7 @@ class PostController extends Controller
                     'id' => $option->id,
                     'text' => $option->mutated_title,
                     'votes' => $option->votes?->count(),
+                    'hasVoted' => $user ? $option->voters()->where('user_id', $user->id)->exists() : false,
                 ]),
                 'total_votes' => $post->poll->options->sum('votes'),
                 'closed' => $post->poll->deadline < now(),
