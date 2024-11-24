@@ -36,10 +36,9 @@ class PostControllerTest extends TestCase
             'name' => 'Test Community',
             'slug' => 'test-community',
         ]);
-        $category = Category::factory()->create([
-            'internal_name' => 'test-category',
-            'display_name' => 'Test Category',
-        ]);
+
+        $pollCategoryId = 2;
+        $category = Category::find($pollCategoryId);
 
         // Add user to community
         $community->users()->attach($user, [
@@ -54,14 +53,12 @@ class PostControllerTest extends TestCase
             'original_title' => 'Test Post Title',
             'original_content' => 'Test Post Content',
             'category_id' => $category->id,
-            'poll' => [
-                'question' => 'What is your favorite color?',
-                'deadline' => $deadline->format('Y-m-d H:i:s'),
-                'options' => [
-                    ['text' => 'Red'],
-                    ['text' => 'Blue'],
-                    ['text' => 'Green']
-                ]
+            'poll_question' => 'What is your favorite color?',
+            'poll_deadline' => $deadline->format('Y-m-d H:i:s'),
+            'poll_options' => [
+                'Red',
+                'Blue',
+                'Green',
             ]
         ];
 
@@ -86,8 +83,8 @@ class PostControllerTest extends TestCase
         // Assert poll was created
         $this->assertDatabaseHas('polls', [
             'post_id' => $post->id,
-            'original_title' => 'What is your favorite color?',
-            'mutated_title' => 'What is your favorite color?',
+            'original_content' => 'What is your favorite color?',
+            'mutated_content' => 'What is your favorite color?',
             'deadline' => $deadline->format('Y-m-d H:i:s'),
         ]);
 
