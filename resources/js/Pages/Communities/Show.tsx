@@ -20,6 +20,7 @@ interface Post {
     isUpVoted: boolean;
     comments: number;
     createdAt: string;
+    isApproved: boolean;
 }
 
 interface Category {
@@ -331,6 +332,11 @@ export default function Show({ community, auth, categories, posts }: Props) {
                                                         <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs">
                                                             {post.category}
                                                         </span>
+                                                        {!post.isApproved && (
+                                                            <span className="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full text-xs">
+                                                                Pendiente de aprobación
+                                                            </span>
+                                                        )}
                                                         <span className="hidden sm:inline">•</span>
                                                         <span>{post.createdAt.charAt(0).toUpperCase() + post.createdAt.slice(1)}</span>
                                                         <span className="hidden sm:inline">•</span>

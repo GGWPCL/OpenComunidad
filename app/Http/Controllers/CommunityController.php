@@ -50,16 +50,35 @@ class CommunityController extends Controller
         $this->processMediaUrls($community);
         $user = Auth::user();
         $isMember = false;
+        $isAdmin = false;
         if ($user) {
             $isMember = $community->users()
                 ->where('user_id', $user->id)
                 ->exists();
+
+            $isAdmin = $community->users()
+            ->where('user_id', $user->id)
+            ->where('is_admin', true)
+            ->exists();
         }
 
         $categories = Category::select('display_name as name', 'internal_name', 'icon', 'description')->get();
         $selectedCategory = request()->query('category');
 
         $postsQuery = Post::where('community_id', $community->id);
+        
+        // Show only approved posts for non-admins, plus user's own posts if logged in
+        if (!$isAdmin) {
+            $postsQuery->where(function($query) use ($user) {
+                $query->where('is_approved', true);
+                
+                if ($user) {
+                    $query->orWhere('author_id', $user->id);
+                }
+            });
+        }
+
+        // Apply category filter if selected
         if ($selectedCategory) {
             $postsQuery->whereHas('category', function ($query) use ($selectedCategory) {
                 $query->where('internal_name', $selectedCategory);
@@ -77,7 +96,8 @@ class CommunityController extends Controller
                     'comments' => (int) $post->comments?->count(),
                     'votes' => (int) $post->upVotedBy()?->count(),
                     'isUpVoted' => $user instanceof User && $user->upVotedPosts()?->where('post_id', $post->id)->exists(),
-                    'createdAt' => $post->created_at->diffForHumans()
+                    'createdAt' => $post->created_at->diffForHumans(),
+                    'isApproved' => $post->is_approved,
                 ];
             })
             ->values()

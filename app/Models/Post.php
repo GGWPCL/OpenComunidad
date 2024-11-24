@@ -26,6 +26,7 @@ class Post extends Model
         'mutated_title',
         'original_content',
         'mutated_content',
+        'is_approved',
     ];
 
     /**

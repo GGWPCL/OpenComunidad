@@ -25,6 +25,7 @@ interface Post {
     isFollowed: boolean;
     comments: Comment[];
     createdAt: string;
+    isApproved: boolean;
     poll?: {
         question: string;
         options: PollOption[];
@@ -198,6 +199,11 @@ export default function Show({ auth, post, comments, community }: Props) {
                                 <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
                                     {post.category}
                                 </div>
+                                {!post.isApproved && (
+                                    <div className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+                                        Pendiente de aprobación
+                                    </div>
+                                )}
                                 <div>•</div>
                                 <div>{post.createdAt.charAt(0).toUpperCase() + post.createdAt.slice(1)}</div>
                                 <div>•</div>
