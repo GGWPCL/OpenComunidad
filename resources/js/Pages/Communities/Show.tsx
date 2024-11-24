@@ -33,6 +33,9 @@ interface Props {
     community: {
         name: string;
         isMember: boolean;
+        banner: { url: string };
+        logo: { url: string };
+        address: string;
     };
     auth: { user: any };
     categories: Category[];
@@ -172,6 +175,61 @@ export default function Show({ community, auth, categories, posts }: Props) {
                     </div>
                 </div>
             )}
+
+            {/* Community Banner */}
+            <div className="relative">
+                <div className="h-32 sm:h-48 w-full bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 overflow-hidden">
+                    {community.banner ? (
+                        <>
+                            {/* Desktop Banner */}
+                            <img
+                                src={community.banner.url}
+                                alt={`${community.name} banner`}
+                                className="hidden sm:block absolute inset-0 w-full h-full object-cover"
+                            />
+                            {/* Mobile Banner (optimized size) */}
+                            <img
+                                src={community.banner.url}
+                                alt={`${community.name} banner`}
+                                className="sm:hidden absolute inset-0 w-full h-full object-cover object-center"
+                            />
+                            {/* Overlay gradient for better text visibility */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                        </>
+                    ) : (
+                        <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800" />
+                    )}
+
+                    {/* Community Info */}
+                    <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 flex items-end">
+                        <div className="flex items-center gap-4">
+                            {community.logo ? (
+                                <img
+                                    src={community.logo.url}
+                                    alt={community.name}
+                                    className="w-16 h-16 sm:w-24 sm:h-24 rounded-full object-cover border-2 border-white shadow-md"
+                                />
+                            ) : (
+                                <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-white/10 backdrop-blur-sm border-2 border-white/50 shadow-md flex items-center justify-center">
+                                    <svg className="w-8 h-8 sm:w-12 sm:h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                    </svg>
+                                </div>
+                            )}
+                            <div>
+                                <h1 className="text-2xl sm:text-3xl font-bold text-white shadow-sm">
+                                    {community.name}
+                                </h1>
+                                {community.address && (
+                                    <p className="text-sm sm:text-base text-white/90 shadow-sm">
+                                        {community.address}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div className="py-6 lg:py-12">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

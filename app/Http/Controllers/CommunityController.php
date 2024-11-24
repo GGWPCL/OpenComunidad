@@ -46,6 +46,8 @@ class CommunityController extends Controller
      */
     public function show(Community $community)
     {
+        $community = Community::with(['logo', 'banner'])->find($community->id);
+        $this->processMediaUrls($community);
         $user = Auth::user();
         $isMember = false;
         if ($user) {
@@ -86,8 +88,8 @@ class CommunityController extends Controller
                 'name' => $community->name,
                 'slug' => $community->slug,
                 'isMember' => $isMember,
-                'logo' => $community->logo?->url,
-                'banner' => $community->banner?->url,
+                'logo' => $community->logo,
+                'banner' => $community->banner,
             ],
             'categories' => $categories,
             'posts' => $posts,
@@ -152,5 +154,17 @@ class CommunityController extends Controller
             'name' => (string) \Illuminate\Support\Str::uuid(),
             'url' => Storage::disk('r2')->url($file),
         ]);
+    }
+
+    private function processMediaUrls($community)
+    {
+        $baseUrl = 'https://storage.opencomunidad.cl';
+
+        foreach (['logo', 'banner'] as $mediaType) {
+            if ($community->{$mediaType}) {
+                $path = parse_url($community->{$mediaType}->url, PHP_URL_PATH);
+                $community->{$mediaType}->url = $baseUrl . $path;
+            }
+        }
     }
 }
