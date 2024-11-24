@@ -57,43 +57,43 @@ export default function Dashboard({ isAdmin, userCommunities = [], otherCommunit
     return (
         <AuthenticatedLayout
             header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800">
+                <h2 className="text-xl font-semibold leading-tight text-gray-800 px-4 sm:px-0">
                     Comunidades
                 </h2>
             }
         >
             <Head title="Mis Comunidades" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg mb-8">
-                        <div className="p-6">
-                            <h3 className="text-xl font-semibold mb-4">Mis Comunidades</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="py-6 sm:py-12">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg mb-6 sm:mb-8">
+                        <div className="p-4 sm:p-6">
+                            <h3 className="text-lg sm:text-xl font-semibold mb-4">Mis Comunidades</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                                 {(userCommunities || []).map((community, index) => (
                                     <a
                                         href={`/communities/${community.slug}`}
                                         key={index}
-                                        className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer block w-full"
+                                        className="group bg-white rounded-lg ring-1 ring-gray-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden block w-full"
                                     >
-                                        <div className="h-32 w-full bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 flex items-center justify-center relative">
+                                        <div className="h-24 sm:h-32 w-full bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 flex items-center justify-center relative">
                                             {community.banner ? (
                                                 <img
                                                     src={community.banner.url}
                                                     alt={`${community.name} banner`}
-                                                    className="absolute inset-0 w-full h-full object-cover"
+                                                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                                                 />
                                             ) : (
-                                                <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800" />
+                                                <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800" />
                                             )}
                                             {community.logo ? (
                                                 <img
                                                     src={community.logo.url}
                                                     alt={community.name}
-                                                    className="w-24 h-24 rounded-full object-cover z-10 border-2 border-white shadow-md"
+                                                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover z-10 border-2 border-white shadow-md"
                                                 />
                                             ) : (
-                                                <svg className="w-24 h-24 text-blue-500 dark:text-blue-400 z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg className="w-20 h-20 sm:w-24 sm:h-24 text-blue-500 dark:text-blue-400 z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                                 </svg>
                                             )}
@@ -128,62 +128,63 @@ export default function Dashboard({ isAdmin, userCommunities = [], otherCommunit
                                         </div>
                                     </a>
                                 ))}
-
                             </div>
                         </div>
                     </div>
 
                     {otherCommunities && otherCommunities.length > 0 && (
                         <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                            <div className="border-t-4 border-blue-500 p-6">
-                                <h3 className="text-xl font-semibold mb-4">Otras Comunidades</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {otherCommunities.map((community, index) => (
-                                        <a
-                                            href={`/communities/${community.slug}`}
-                                            key={index}
-                                            className="bg-gray-50 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer block w-full"
-                                        >
-                                            <div className="h-32 w-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center relative">
-                                                {community.banner ? (
-                                                    <img
-                                                        src={community.banner.url}
-                                                        alt={`${community.name} banner`}
-                                                        className="absolute inset-0 w-full h-full object-cover opacity-75"
-                                                    />
-                                                ) : (
-                                                    <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-gray-100 to-gray-200" />
+                            <div className="border-t-4 border-blue-500">
+                                <div className="p-4 sm:p-6">
+                                    <h3 className="text-lg sm:text-xl font-semibold mb-4">Otras Comunidades</h3>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                                        {otherCommunities.map((community, index) => (
+                                            <a
+                                                href={`/communities/${community.slug}`}
+                                                key={index}
+                                                className="bg-gray-50 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer block w-full"
+                                            >
+                                                <div className="h-32 w-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center relative">
+                                                    {community.banner ? (
+                                                        <img
+                                                            src={community.banner.url}
+                                                            alt={`${community.name} banner`}
+                                                            className="absolute inset-0 w-full h-full object-cover opacity-75"
+                                                        />
+                                                    ) : (
+                                                        <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-gray-100 to-gray-200" />
+                                                    )}
+                                                    {community.logo ? (
+                                                        <img
+                                                            src={community.logo.url}
+                                                            alt={community.name}
+                                                            className="w-24 h-24 rounded-full object-cover z-10 border-2 border-white shadow-md"
+                                                        />
+                                                    ) : (
+                                                        <svg className="w-24 h-24 text-gray-400 z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                                        </svg>
+                                                    )}
+                                                </div>
+                                                <div className="p-4">
+                                                    <h3 className="text-lg font-semibold text-gray-700 mb-1">
+                                                        {community.name}
+                                                    </h3>
+                                                    <p className="text-sm text-gray-500 mb-2">
+                                                        {community.address}
+                                                    </p>
+                                                </div>
+                                                {community.view_only && (
+                                                    <span
+                                                        className="inline-block px-2 py-1 text-sm bg-gray-100 text-gray-800 rounded cursor-help"
+                                                        title="Solo puedes ver esta comunidad"
+                                                    >
+                                                        Solo lectura
+                                                    </span>
                                                 )}
-                                                {community.logo ? (
-                                                    <img
-                                                        src={community.logo.url}
-                                                        alt={community.name}
-                                                        className="w-24 h-24 rounded-full object-cover z-10 border-2 border-white shadow-md"
-                                                    />
-                                                ) : (
-                                                    <svg className="w-24 h-24 text-gray-400 z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                                    </svg>
-                                                )}
-                                            </div>
-                                            <div className="p-4">
-                                                <h3 className="text-lg font-semibold text-gray-700 mb-1">
-                                                    {community.name}
-                                                </h3>
-                                                <p className="text-sm text-gray-500 mb-2">
-                                                    {community.address}
-                                                </p>
-                                            </div>
-                                            {community.view_only && (
-                                                <span
-                                                    className="inline-block px-2 py-1 text-sm bg-gray-100 text-gray-800 rounded cursor-help"
-                                                    title="Solo puedes ver esta comunidad"
-                                                >
-                                                    Solo lectura
-                                                </span>
-                                            )}
-                                        </a>
-                                    ))}
+                                            </a>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </div>
