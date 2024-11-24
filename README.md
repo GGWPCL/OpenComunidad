@@ -59,13 +59,22 @@ While built in a short time frame, we aimed to create a foundation that benefits
 ## 🚀 Getting Started
 
 1. Clone the repository
-2. Install dependencies
-3. Set up your environment variables
-4. Run migrations
-5. Start the development servers
+2. Set up your environment variables
+3. Install dependencies
 ```
-php artisan serve
-npm run dev
+make vendor-install
+```
+4. Start the containers
+```
+make run
+```
+5. Run migrations
+```
+make migrate
+```
+6. Seed the database
+```
+make seed
 ```
 
 

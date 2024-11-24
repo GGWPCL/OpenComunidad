@@ -1,5 +1,5 @@
 .PHONY: vendor-install
-vendor-install: 
+vendor-install:
 	@docker run --rm \
 		-u "$$(id -u):$$(id -g)" \
 		-v "$$(pwd):/var/www/html" \
@@ -23,3 +23,7 @@ stop:
 .PHONY: migrate
 migrate:
 	@./vendor/bin/sail artisan migrate
+
+.PHONY: seed
+seed:
+	@./vendor/bin/sail artisan db:seed
