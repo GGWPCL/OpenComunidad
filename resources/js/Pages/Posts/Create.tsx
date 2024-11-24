@@ -62,7 +62,7 @@ export default function Create({ categories }: { categories: Category[] }) {
         category_id: selectedCategory,
         has_poll: false,
         poll_question: '',
-        poll_options: ['', '']
+        poll_options: ['', ''],
     });
 
     // Add new state for rate limiting

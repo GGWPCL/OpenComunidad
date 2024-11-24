@@ -19,7 +19,8 @@ class FollowTest extends TestCase
         // Create test user and required relationships
         $user = User::factory()->create();
         $community = Community::factory()->create([
-            'name' => 'Test Community'
+            'name' => 'Test Community',
+            'slug' => 'test-community',
         ]);
         $category = Category::factory()->create([
             'display_name' => 'Test Category',

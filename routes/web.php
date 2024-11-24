@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\CommunityController;
@@ -9,13 +8,14 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\Auth\OnboardingController;
 use App\Models\Community;
 use App\Http\Controllers\CommentController;
+use App\Utils\MediaProcessor;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
         'communities' => Community::with(['logo', 'banner'])->get()->each(function ($community) {
-            processMediaUrls($community);
+            MediaProcessor::processMediaUrls($community);
         }),
     ]);
 });
@@ -30,7 +30,7 @@ Route::middleware(['auth', 'onboarding.complete'])->group(function () {
             ->with(['logo', 'banner'])
             ->get()
             ->each(function ($community) {
-                processMediaUrls($community);
+                MediaProcessor::processMediaUrls($community);
             });
 
         $otherCommunities = Community::whereDoesntHave('users', function ($query) {
@@ -39,7 +39,7 @@ Route::middleware(['auth', 'onboarding.complete'])->group(function () {
             ->with(['logo', 'banner'])
             ->get()
             ->each(function ($community) {
-                processMediaUrls($community);
+                MediaProcessor::processMediaUrls($community);
                 $community->view_only = true;
             });
 
@@ -48,11 +48,10 @@ Route::middleware(['auth', 'onboarding.complete'])->group(function () {
             'otherCommunities' => $otherCommunities,
             'isAdmin' => auth()->user()->communities()->wherePivot('is_admin', true)->exists(),
         ]);
-
     })->name('dashboard');
 
     Route::post('/communities/{community}', [CommunityController::class, 'update'])
-    ->name('communities.update');
+        ->name('communities.update');
 
     Route::post('/posts/{post}/up-vote', [PostController::class, 'upVote'])->name('posts.up_vote');
     Route::post('/posts/{post}/follow', [PostController::class, 'follow'])->name('posts.follow');
@@ -70,16 +69,4 @@ Route::middleware('auth')->group(function () {
     Route::post('/onboarding/complete', [OnboardingController::class, 'complete'])->name('onboarding.complete');
 });
 
-require __DIR__ . '/auth.php';
-
-function processMediaUrls($community)
-{
-    $baseUrl = 'https://storage.opencomunidad.cl';
-
-    foreach (['logo', 'banner'] as $mediaType) {
-        if ($community->{$mediaType}) {
-            $path = parse_url($community->{$mediaType}->url, PHP_URL_PATH);
-            $community->{$mediaType}->url = $baseUrl . $path;
-        }
-    }
-}
+require_once __DIR__ . '/auth.php';

@@ -20,6 +20,7 @@ class ModelRelationshipsTest extends TestCase
 
         $community = Community::factory()->create([
             'name' => 'Test Community',
+            'slug' => 'test-community',
         ]);
         $user->communities()->attach($community, [
             'is_admin' => true,

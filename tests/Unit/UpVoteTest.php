@@ -19,11 +19,12 @@ class UpVoteTest extends TestCase
         // Create test user and required relationships
         $user = User::factory()->create();
         $community = Community::factory()->create([
-            'name' => 'Test Community'
+            'name' => 'Test Community',
+            'slug' => 'test-community-upvote',
         ]);
         $category = Category::factory()->create([
             'display_name' => 'Test Category',
-            'internal_name' => 'test_category'
+            'internal_name' => 'test_category_upvote'
         ]);
 
         // Create a test post

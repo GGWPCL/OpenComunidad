@@ -26,13 +26,6 @@ interface Post {
     comments: Comment[];
     createdAt: string;
     isApproved: boolean;
-    poll?: {
-        question: string;
-        options: PollOption[];
-        total_votes: number;
-        closed: boolean;
-        ends_at: string;
-    };
 }
 
 interface Comment {
@@ -58,6 +51,13 @@ interface Props {
         };
     };
     post: Post;
+    poll?: {
+        question: string;
+        options: PollOption[];
+        total_votes: number;
+        closed: boolean;
+        deadline: string;
+    };
     comments: Comment[];
     community: {
         name: string;
@@ -66,7 +66,11 @@ interface Props {
     };
 }
 
-const calculateTimeLeft = (endDate: string) => {
+const calculateTimeLeft = (endDate?: string) => {
+    if (!endDate) {
+        return null;
+    }
+
     const difference = new Date(endDate).getTime() - new Date().getTime();
 
     if (difference <= 0) {
@@ -81,24 +85,12 @@ const calculateTimeLeft = (endDate: string) => {
     };
 };
 
-export default function Show({ auth, post, comments, community }: Props) {
-    const mockPoll = {
-        question: "¿Qué día prefieren para la próxima reunión de vecinos?",
-        options: [
-            { id: 1, text: "Sábado por la mañana", votes: 12 },
-            { id: 2, text: "Sábado por la tarde", votes: 8 },
-            { id: 3, text: "Domingo por la mañana", votes: 15 },
-            { id: 4, text: "Domingo por la tarde", votes: 5 },
-        ],
-        total_votes: 40,
-        closed: false,
-        deadline: "2024-11-30T23:59:59"
-    };
+export default function Show({ auth, post, poll, comments, community }: Props) {
 
     const [postState, setPostState] = useState<Post>(post);
     const [selectedOption, setSelectedOption] = useState<number | null>(null);
     const [hasVoted, setHasVoted] = useState(false);
-    const [timeLeft, setTimeLeft] = useState(calculateTimeLeft(mockPoll.deadline));
+    const [timeLeft, setTimeLeft] = useState(calculateTimeLeft(poll?.deadline));
 
     const isAdmin = (usePage().props as { community?: { isAdmin: boolean } }).community?.isAdmin;
 
@@ -145,9 +137,9 @@ export default function Show({ auth, post, comments, community }: Props) {
     };
 
     useEffect(() => {
-        if (!mockPoll.closed) {
+        if (!poll?.closed) {
             const timer = setInterval(() => {
-                const remainingTime = calculateTimeLeft(mockPoll.deadline);
+                const remainingTime = calculateTimeLeft(poll?.deadline);
                 setTimeLeft(remainingTime);
 
                 if (!remainingTime) {
@@ -157,7 +149,7 @@ export default function Show({ auth, post, comments, community }: Props) {
 
             return () => clearInterval(timer);
         }
-    }, [mockPoll.deadline, mockPoll.closed]);
+    }, [poll?.deadline, poll?.closed]);
 
     return (
         <Layout
@@ -210,24 +202,24 @@ export default function Show({ auth, post, comments, community }: Props) {
                                 <div>Por un vecino de la comunidad</div>
                             </div>
 
-                            {mockPoll && (
+                            {poll && (
                                 <Card className="mb-8 mt-8">
                                     <CardContent className="p-6">
-                                        <h3 className="text-xl font-bold mb-4">{mockPoll.question}</h3>
+                                        <h3 className="text-xl font-bold mb-4">{poll?.question}</h3>
                                         <div className="space-y-3">
-                                            {mockPoll.options.map((option) => {
-                                                const percentage = (option.votes / mockPoll.total_votes) * 100;
-                                                const showResults = mockPoll.closed || (auth.user && auth.roles.is_admin);
+                                            {poll?.options.map((option) => {
+                                                const percentage = (option.votes / poll!.total_votes) * 100;
+                                                const showResults = poll?.closed || (auth.user && auth.roles.is_admin);
 
                                                 return (
                                                     <div
                                                         key={option.id}
                                                         className={cn(
                                                             "relative cursor-pointer rounded-lg border p-4 transition-colors",
-                                                            !mockPoll.closed && !hasVoted ? "hover:bg-gray-50" : "cursor-default",
+                                                            !poll?.closed && !hasVoted ? "hover:bg-gray-50" : "cursor-default",
                                                             selectedOption === option.id && "border-blue-500 bg-blue-50"
                                                         )}
-                                                        onClick={() => !mockPoll.closed && handleVote(option.id)}
+                                                        onClick={() => !poll?.closed && handleVote(option.id)}
                                                     >
                                                         <div className="relative z-10 flex justify-between">
                                                             <span>{option.text}</span>
@@ -251,11 +243,11 @@ export default function Show({ auth, post, comments, community }: Props) {
                                             })}
                                         </div>
                                         <div className="mt-4 text-sm text-gray-500 text-center">
-                                            {mockPoll.closed ? (
+                                            {poll?.closed ? (
                                                 "Esta encuesta está cerrada"
                                             ) : hasVoted ? (
                                                 <>
-                                                    <div>{`${mockPoll.total_votes} votos totales`}</div>
+                                                    <div>{`${poll?.total_votes} votos totales`}</div>
                                                     <div className="mt-1">
                                                         {timeLeft ? (
                                                             <div className="font-medium">
