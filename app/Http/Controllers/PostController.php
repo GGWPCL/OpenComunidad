@@ -58,4 +58,38 @@ class PostController extends Controller
             (bool) $upVote,
         );
     }
+
+    public function show(Post $post)
+    {
+        $user = Auth::user();
+
+        $postData = [
+            'id' => $post->id,
+            'title' => $post->mutated_title,
+            'content' => $post->mutated_content,
+            'category' => $post->category?->display_name,
+            'author' => $post->author?->name,
+            'votes' => (int) $post->upVotedBy()?->count(),
+            'isUpVoted' => $user instanceof User && $user->upVotedPosts()?->where('post_id', $post->id)->exists(),
+            'createdAt' => $post->created_at->diffForHumans()
+        ];
+
+        $comments = $post->comments->sortBy('created_at')->map(fn($comment) => [
+            'id' => $comment->id,
+            'author' => $comment->author?->name,
+            'content' => $comment->mutated_content,
+            'createdAt' => $comment->created_at->diffForHumans(),
+        ])
+            ->values()
+            ->all();
+
+        return Inertia::render('Posts/Show', [
+            'post' => $postData,
+            'comments' => $comments,
+            'community' => [
+                'name' => $post->community->name,
+                'slug' => $post->community->slug,
+            ]
+        ]);
+    }
 }

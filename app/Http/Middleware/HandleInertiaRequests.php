@@ -29,12 +29,24 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+
         return array_merge(parent::share($request), [
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user,
+                'roles' => $user ? $user->communities()
+                    ->select(['communities.id', 'is_admin', 'is_manager', 'is_neighbor'])
+                    ->get()
+                    ->mapWithKeys(function ($community) {
+                        return [$community->id => [
+                            'is_admin' => (bool) $community->pivot->is_admin,
+                            'is_manager' => (bool) $community->pivot->is_manager,
+                            'is_neighbor' => (bool) $community->pivot->is_neighbor,
+                        ]];
+                    })->values()->all() : null,
             ],
             'flash' => [
-                'message' => fn () => $request->session()->get('message'),
+                'message' => fn() => $request->session()->get('message'),
             ]
         ]);
     }

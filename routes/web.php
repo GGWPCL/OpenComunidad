@@ -8,6 +8,8 @@ use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\Auth\OnboardingController;
 use App\Models\Community;
+use App\Http\Controllers\CommentController;
+
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -17,7 +19,10 @@ Route::get('/', function () {
 });
 
 Route::get('/communities/{community:slug}', [CommunityController::class, 'show'])->name('communities.show');
+
+Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
 Route::post('/posts/{post}/up-vote', [PostController::class, 'upVote'])->name('posts.up_vote');
+Route::post('/posts/{post}/comments', [CommentController::class, 'store'])->name('comments.store');
 
 
 Route::middleware(['auth', 'onboarding.complete'])->group(function () {

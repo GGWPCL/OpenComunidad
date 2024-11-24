@@ -88,7 +88,6 @@ export default function Show({ community, auth, categories, posts }: Props) {
         }
     }, [data]);
 
-
     const handleCategoryClick = (internal_name?: string) => {
         setCurrentCategory(internal_name);
 
@@ -201,7 +200,7 @@ export default function Show({ community, auth, categories, posts }: Props) {
                                                 className="h-auto p-4 flex flex-col items-center text-center space-y-2 w-full"
                                                 onClick={() => handleCreatePost(category.internal_name)}
                                             >
-                                                <div className="text-2xl">{category.icon}</div>
+                                                <div className="font-semibold">{category.icon}</div>
                                                 <div className="font-semibold">{category.name}</div>
                                                 <div className="text-sm text-gray-500 whitespace-normal w-full">{category.description}</div>
                                             </Button>
@@ -220,7 +219,13 @@ export default function Show({ community, auth, categories, posts }: Props) {
                             {/* Posts List */}
                             <div className="space-y-4">
                                 {postsState.map((post) => (
-                                    <Card key={post.id} className="hover:shadow-md transition-shadow">
+                                    <Card
+                                        key={post.id}
+                                        className="hover:shadow-md transition-shadow cursor-pointer"
+                                        onClick={() => router.visit(route('posts.show', {
+                                            post: post.id
+                                        }))}
+                                    >
                                         <CardContent className="p-6">
                                             <div className="flex gap-4">
                                                 {/* Votes */}
@@ -236,14 +241,13 @@ export default function Show({ community, auth, categories, posts }: Props) {
                                                     </Button>
                                                 </div>
 
-                                                {/* Post Content */}
                                                 <div className="flex-1">
                                                     <div className="flex items-center space-x-2 text-sm text-gray-500 mb-2">
                                                         <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs">
                                                             {post.category}
                                                         </span>
-                                                        <span>• {post.createdAt}</span>
-                                                        <span>• por un <strong>vecino</strong> de la comunidad</span>
+                                                        <span>• {post.createdAt.charAt(0).toUpperCase() + post.createdAt.slice(1)}</span>
+                                                        <span>• Por un vecino de la comunidad</span>
                                                     </div>
                                                     <h3 className="text-lg font-semibold mb-2">{post.title}</h3>
                                                     <p className="text-gray-600 mb-4">{post.content}</p>

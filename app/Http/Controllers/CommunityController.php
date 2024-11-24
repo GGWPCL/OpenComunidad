@@ -77,7 +77,9 @@ class CommunityController extends Controller
                     'isUpVoted' => $user instanceof User && $user->upVotedPosts()?->where('post_id', $post->id)->exists(),
                     'createdAt' => $post->created_at->diffForHumans()
                 ];
-            })->all();
+            })
+            ->values()
+            ->all();
 
         return Inertia::render('Communities/Show', [
             'community' => [

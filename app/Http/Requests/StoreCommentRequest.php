@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class StoreCommentRequest extends FormRequest
 {
@@ -11,7 +13,13 @@ class StoreCommentRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        $user = Auth::user();
+        $post = $this->route('post');
+
+        return $user instanceof User && $user->communities()
+            ->where('communities.id', $post->community_id)
+            ->wherePivot('is_manager', true)
+            ->exists();
     }
 
     /**
@@ -22,7 +30,7 @@ class StoreCommentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'original_content' => ['required', 'string'],
         ];
     }
 }
