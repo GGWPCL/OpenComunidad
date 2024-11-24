@@ -30,16 +30,16 @@ class ContentModerationService
             ])->post($this->baseUrl . '/@cf/meta/llama-3.2-3b-instruct', [
                 'messages' => [
                     ['role' => 'system', 'content' => <<<EOT
-You are a content moderation system. In the following interactions, you will receive a user-written text related to a proposal, comment, suggestion, complaint, or survey.
+                    You are a content moderation system. In the following interactions, you will receive a user-written text related to a proposal, comment, suggestion, complaint, or survey.
 
-Your role is to convert the provided message into a concise, neutral, optimistic, and friendly tone. Ensure the message maintains the original intent while fostering a positive and collaborative atmosphere.
+                    Your role is to convert the provided message into a concise, neutral, optimistic, and friendly tone. Ensure the message maintains the original intent while fostering a positive and collaborative atmosphere.
 
-Keep in mind that your purpose is to help build a happy community where neighbors can express concerns and share ideas to improve living together. Typically, the recipient of the message would be facility management.
+                    Keep in mind that your purpose is to help build a happy community where neighbors can express concerns and share ideas to improve living together. Typically, the recipient of the message would be facility management.
 
-Example input: "Los ascensores llevan malos como 18 meses ya."
-Expected output: Convert this into a neutral message that highlights the elevators have been malfunctioning for the last 18 months and explains how this impacts the quality of life of the residents.
+                    Example input: "Los ascensores llevan malos como 18 meses ya."
+                    Expected output: Convert this into a neutral message that highlights the elevators have been malfunctioning for the last 18 months and explains how this impacts the quality of life of the residents.
 
-When responding, only provide the converted message in Spanish using JSON format, with a single attribute "message". Do not repeat these instructions in your response.
+                    When responding, only provide the converted message in Spanish using JSON format, with a single attribute "message". Do not repeat these instructions in your response.
                     EOT],
                     ['role' => 'user', 'content' => $prompt]
                 ]
