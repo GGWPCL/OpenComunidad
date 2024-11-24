@@ -90,7 +90,7 @@ export default function Show({ auth, post, comments, community }: Props) {
     return (
         <Layout
             header={
-                <div className="flex items-center justify-between space-x-4">
+                <div className="flex items-center justify-between space-x-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <Button
                         variant="ghost"
                         onClick={() => router.visit(route('communities.show', community.slug))}
@@ -114,64 +114,74 @@ export default function Show({ auth, post, comments, community }: Props) {
         >
             <Head title={`${post.title} - ${community.name}`} />
 
-            <div className="py-12 text-center sm:text-left mx-6 sm:mx-0">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <Card>
-                        <CardTitle className="px-6 pt-6 text-xl">{post.title}</CardTitle>
-                        <CardContent className="p-6">
-                            <div className="prose max-w-none mb-4">
+            <div className="py-12">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <Card className="mb-8">
+                        <CardTitle className="p-6 text-2xl font-bold">{post.title}</CardTitle>
+                        <CardContent className="p-6 pt-0">
+                            <div className="prose prose-lg max-w-none mb-6">
                                 {post.content}
                             </div>
 
-                            <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-4 text-gray-500">
-                                <div className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs">
+                            <div className="flex flex-wrap items-center gap-2 text-gray-500">
+                                <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
                                     {post.category}
                                 </div>
-                                <div>• {post.createdAt.charAt(0).toUpperCase() + post.createdAt.slice(1)}</div>
-                                <div>• Por un vecino de la comunidad</div>
+                                <div>•</div>
+                                <div>{post.createdAt.charAt(0).toUpperCase() + post.createdAt.slice(1)}</div>
+                                <div>•</div>
+                                <div>Por un vecino de la comunidad</div>
                             </div>
                         </CardContent>
                     </Card>
 
                     {/* Comments Section */}
-                    <div className="mt-8 space-y-4 text-center sm:text-left">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    <div className="space-y-6 mt-12">
+                        <h3 className="text-xl font-bold text-gray-900 text-center mb-8">
                             Comentarios ({Array.isArray(comments) ? comments.length : 0})
                         </h3>
 
                         {Array.isArray(comments) && comments.length > 0 ? (
-                            comments.map((comment) => (
-                                <Card key={comment.id} className="mx-6 sm:mx-0 sm:ml-8">
-                                    <CardContent className="p-4">
-                                        <div className="prose max-w-none mb-4">
-                                            {comment.content}
-                                        </div>
-
-                                        <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-4 text-gray-500 text-sm">
-                                            <div className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs">
-                                                Comentario
+                            <div className="space-y-6 max-w-3xl mx-auto">
+                                {comments.map((comment) => (
+                                    <Card key={comment.id} className="transform transition-all duration-200 hover:shadow-lg">
+                                        <CardContent className="p-6">
+                                            <div className="prose prose-sm max-w-none mb-6">
+                                                {comment.content}
                                             </div>
-                                            <div>• {comment.createdAt.charAt(0).toUpperCase() + comment.createdAt.slice(1)}</div>
-                                            <div>• Por un administrador de la comunidad</div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))
+
+                                            <div className="flex flex-wrap items-center justify-center gap-2 text-gray-500 text-sm border-t pt-4">
+                                                <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium">
+                                                    Comentario
+                                                </div>
+                                                <div>•</div>
+                                                <div>{comment.createdAt.charAt(0).toUpperCase() + comment.createdAt.slice(1)}</div>
+                                                <div>•</div>
+                                                <div>Por un administrador de la comunidad</div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
                         ) : (
-                            <p className="text-gray-500 text-center">No hay comentarios aún</p>
+                            <div className="text-center py-12 bg-gray-50 rounded-lg">
+                                <p className="text-gray-500 text-lg">No hay comentarios aún</p>
+                            </div>
                         )}
                     </div>
 
+                    {/* Comment Form */}
                     {auth.user && (auth.roles.is_manager || auth.roles.is_admin) && (
-                        <div className="mt-8 space-y-4 text-center sm:text-left">
-
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Añadir un comentario</h3>
-                            <Card className="mt-8 space-y-4">
-                                <CardContent className="p-6">
-                                    <div className="space-y-4">
+                        <div className="mt-16 max-w-3xl mx-auto">
+                            <h3 className="text-xl font-bold text-gray-900 text-center mb-8">
+                                Añadir un comentario
+                            </h3>
+                            <Card className="transform transition-all duration-200 hover:shadow-lg">
+                                <CardContent className="p-8">
+                                    <div className="space-y-6">
                                         <div>
-                                            <Label>Contenido</Label>
-                                            <div className="mt-1 border rounded-md">
+                                            <Label className="text-lg mb-2">Contenido</Label>
+                                            <div className="mt-2 border rounded-lg overflow-hidden">
                                                 <Toolbar editor={commentEditor} />
                                                 <EditorContent
                                                     editor={commentEditor}
@@ -179,18 +189,20 @@ export default function Show({ auth, post, comments, community }: Props) {
                                                 />
                                             </div>
                                             {errors.original_content && (
-                                                <p className="text-sm text-red-600 mt-1">{errors.original_content}</p>
+                                                <p className="text-sm text-red-600 mt-2">{errors.original_content}</p>
                                             )}
                                         </div>
 
-                                        <Button
-                                            type="button"
-                                            disabled={commentProcessing}
-                                            onClick={handleCommentSubmit}
-                                            className="w-full sm:w-auto"
-                                        >
-                                            Publicar comentario
-                                        </Button>
+                                        <div className="flex justify-center">
+                                            <Button
+                                                type="button"
+                                                disabled={commentProcessing}
+                                                onClick={handleCommentSubmit}
+                                                className="px-8 py-2"
+                                            >
+                                                Publicar comentario
+                                            </Button>
+                                        </div>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -198,6 +210,6 @@ export default function Show({ auth, post, comments, community }: Props) {
                     )}
                 </div>
             </div>
-        </Layout >
+        </Layout>
     );
 }
