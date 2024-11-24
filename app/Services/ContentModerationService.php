@@ -88,9 +88,8 @@ class ContentModerationService
                 EOT;
             $response = Http::withHeaders([
                 'Authorization' => "Bearer {$this->apiToken}",
-            ])->post($this->baseUrl . '/@cf/mistral/mistral-7b-instruct-v0.2-lora', [
+            ])->post($this->baseUrl . '/@cf/meta/llama-3.2-11b-vision-instruct', [
                 'messages' => [
-                    ['role' => 'user', 'content' => 'agree'],
                     ['role' => 'system', 'content' => <<<EOT
                         Eres un sistema automatizado de prevalidación de contenido experto que evalúa si un mensaje es suficientemente completo y relevante para ser publicado. Tu tarea es analizar el contenido proporcionado y determinar si cumple con los estándares de suficiencia.
 
@@ -113,13 +112,21 @@ class ContentModerationService
                         - No incluyas explicaciones adicionales fuera del objeto JSON.
                         - Mantén la respuesta breve y al punto.
                     EOT],
+                    ['role' => 'system', 'content' => 'No respondas en formato markdown'],
+                    ['role' => 'system', 'content' => 'Sugerencia constructiva, amigable y concisa para mejorar el mensaje'],
                     ['role' => 'user', 'content' => $prompt]
                 ]
             ]);
 
             if ($response->successful()) {
                 $result = $response->json('result.response');
-                return is_string($result) ? $result : null;
+                if (is_string($result)) {
+                    $cleanResult = preg_replace('/```json\s*|\s*```/', '', $result);
+                    $decodedResult = json_decode($cleanResult, true);
+                    if (isset($decodedResult['message']) && isset($decodedResult['ready'])) {
+                        return json_encode($decodedResult);
+                    }
+                }
             }
 
             Log::error('Content moderation failed', [

@@ -19,11 +19,7 @@ Route::get('/', function () {
 });
 
 Route::get('/communities/{community:slug}', [CommunityController::class, 'show'])->name('communities.show');
-
 Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
-Route::post('/posts/{post}/up-vote', [PostController::class, 'upVote'])->name('posts.up_vote');
-Route::post('/posts/{post}/follow', [PostController::class, 'follow'])->name('posts.follow');
-Route::post('/posts/{post}/comments', [CommentController::class, 'store'])->name('comments.store');
 
 
 Route::middleware(['auth', 'onboarding.complete'])->group(function () {
@@ -64,6 +60,11 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/communities/{community}', [CommunityController::class, 'update'])
         ->name('communities.update');
+
+    Route::post('/posts/{post}/up-vote', [PostController::class, 'upVote'])->name('posts.up_vote');
+    Route::post('/posts/{post}/follow', [PostController::class, 'follow'])->name('posts.follow');
+    Route::post('/posts/{post}/comments', [CommentController::class, 'store'])->name('comments.store');
+    Route::post('/posts/preflight', [PostController::class, 'preflight'])->name('posts.preflight');
 });
 
 require __DIR__ . '/auth.php';

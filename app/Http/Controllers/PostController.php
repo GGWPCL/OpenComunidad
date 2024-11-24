@@ -10,9 +10,17 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use App\Services\ContentModerationService;
 
 class PostController extends Controller
 {
+    protected $contentModerationService;
+
+    public function __construct(ContentModerationService $contentModerationService)
+    {
+        $this->contentModerationService = $contentModerationService;
+    }
+
     public function create(Request $request, string $community)
     {
         return Inertia::render('Posts/Create', [
@@ -30,7 +38,7 @@ class PostController extends Controller
         ]);
 
         $validated['mutated_title'] = $validated['original_title'];
-        $validated['mutated_content'] = $validated['original_content'];
+        $validated['mutated_content'] = $this->contentModerationService->moderateContent($validated['original_content']);
         $validated['author_id'] = $request->user()->id;
         $validated['community_id'] = \App\Models\Community::where('slug', $request->community)->firstOrFail()->id;
 
@@ -111,5 +119,26 @@ class PostController extends Controller
                 'slug' => $post->community->slug,
             ]
         ]);
+    }
+
+    public function preflight(Request $request)
+    {
+        $content = $request->input('content');
+
+        $result = $this->contentModerationService->preflight($content);
+
+        logger()->info($result);
+
+        if (!$result) {
+            return response()->json([
+                'ready' => 0,
+                'message' => 'No se pudo validar el contenido. Por favor, inténtalo de nuevo.'
+            ]);
+        }
+
+        // Parse the JSON string returned from the service
+        $preflightResult = json_decode($result, true);
+
+        return response()->json($preflightResult);
     }
 }

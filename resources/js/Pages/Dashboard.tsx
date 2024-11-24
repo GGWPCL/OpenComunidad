@@ -58,7 +58,7 @@ export default function Dashboard({ isAdmin, userCommunities = [], otherCommunit
         <AuthenticatedLayout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Mis Comunidades
+                    Comunidades
                 </h2>
             }
         >
