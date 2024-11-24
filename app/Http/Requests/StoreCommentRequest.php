@@ -18,7 +18,7 @@ class StoreCommentRequest extends FormRequest
 
         return $user instanceof User && $user->communities()
             ->where('communities.id', $post->community_id)
-            ->wherePivot('is_manager', true)
+            ->withPivot(['is_manager', 'is_admin'])
             ->exists();
     }
 

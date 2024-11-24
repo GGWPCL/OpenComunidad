@@ -48,7 +48,16 @@ Route::middleware(['auth', 'onboarding.complete'])->group(function () {
             'otherCommunities' => $otherCommunities,
             'isAdmin' => auth()->user()->communities()->wherePivot('is_admin', true)->exists(),
         ]);
+
     })->name('dashboard');
+
+    Route::post('/communities/{community}', [CommunityController::class, 'update'])
+    ->name('communities.update');
+
+    Route::post('/posts/{post}/up-vote', [PostController::class, 'upVote'])->name('posts.up_vote');
+    Route::post('/posts/{post}/follow', [PostController::class, 'follow'])->name('posts.follow');
+    Route::post('/posts/{post}/comments', [CommentController::class, 'store'])->name('comments.store');
+    Route::post('/posts/preflight', [PostController::class, 'preflight'])->name('posts.preflight');
 });
 
 Route::middleware('auth')->group(function () {
@@ -59,14 +68,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/communities/{community}/posts', [PostController::class, 'store'])->name('posts.store');
     Route::get('/onboarding', [OnboardingController::class, 'index'])->name('onboarding.index');
     Route::post('/onboarding/complete', [OnboardingController::class, 'complete'])->name('onboarding.complete');
-
-    Route::post('/communities/{community}', [CommunityController::class, 'update'])
-        ->name('communities.update');
-
-    Route::post('/posts/{post}/up-vote', [PostController::class, 'upVote'])->name('posts.up_vote');
-    Route::post('/posts/{post}/follow', [PostController::class, 'follow'])->name('posts.follow');
-    Route::post('/posts/{post}/comments', [CommentController::class, 'store'])->name('comments.store');
-    Route::post('/posts/preflight', [PostController::class, 'preflight'])->name('posts.preflight');
 });
 
 require __DIR__ . '/auth.php';
