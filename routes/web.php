@@ -22,6 +22,7 @@ Route::get('/communities/{community:slug}', [CommunityController::class, 'show']
 
 Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
 Route::post('/posts/{post}/up-vote', [PostController::class, 'upVote'])->name('posts.up_vote');
+Route::post('/posts/{post}/follow', [PostController::class, 'follow'])->name('posts.follow');
 Route::post('/posts/{post}/comments', [CommentController::class, 'store'])->name('comments.store');
 
 
@@ -30,16 +31,16 @@ Route::middleware(['auth', 'onboarding.complete'])->group(function () {
         $userCommunities = auth()->user()->communities()
             ->with(['logo', 'banner'])
             ->get()
-            ->each(function($community) {
+            ->each(function ($community) {
                 processMediaUrls($community);
             });
 
-        $otherCommunities = Community::whereDoesntHave('users', function($query) {
-                $query->where('user_id', auth()->id());
-            })
+        $otherCommunities = Community::whereDoesntHave('users', function ($query) {
+            $query->where('user_id', auth()->id());
+        })
             ->with(['logo', 'banner'])
             ->get()
-            ->each(function($community) {
+            ->each(function ($community) {
                 processMediaUrls($community);
                 $community->view_only = true;
             });
@@ -67,7 +68,8 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__ . '/auth.php';
 
-function processMediaUrls($community) {
+function processMediaUrls($community)
+{
     $baseUrl = 'https://storage.opencomunidad.cl';
 
     foreach (['logo', 'banner'] as $mediaType) {

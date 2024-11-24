@@ -11,6 +11,8 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Toolbar from './Toolbar';
 import { Markdown } from 'tiptap-markdown';
+import UpVote from '@/Components/UpVote';
+import FollowPost from '@/Components/FollowPost';
 
 interface Post {
     id: number;
@@ -20,6 +22,7 @@ interface Post {
     author: string;
     votes: number;
     isUpVoted: boolean;
+    isFollowed: boolean;
     comments: Comment[];
     createdAt: string;
 }
@@ -49,9 +52,6 @@ interface Props {
 }
 
 export default function Show({ auth, post, comments, community }: Props) {
-    const { data, setData, post: postForm } = useForm<{ shouldUpVote?: boolean }>({
-    });
-
     const [postState, setPostState] = useState<Post>(post);
 
     const commentEditor = useEditor({
@@ -75,34 +75,6 @@ export default function Show({ auth, post, comments, community }: Props) {
     } = useForm({
         original_content: '',
     });
-
-    useEffect(() => {
-        if (data.shouldUpVote) {
-            handleUpVote(data.shouldUpVote);
-        }
-    }, [data]);
-
-    const handleUpVote = (shouldUpVote: boolean) => {
-        postForm(route('posts.up_vote', { post: post.id }), {
-            data: { shouldUpVote },
-            preserveScroll: true,
-            onSuccess: () => {
-                let votes = postState.votes;
-                if (!postState.isUpVoted && shouldUpVote) {
-                    votes++;
-                }
-                if (postState.isUpVoted && !shouldUpVote) {
-                    votes--;
-                }
-
-                setPostState({
-                    ...postState,
-                    votes,
-                    isUpVoted: shouldUpVote
-                });
-            }
-        });
-    };
 
     const handleCommentSubmit = () => {
         postComment(route('comments.store', { post: post.id }), {
@@ -129,30 +101,15 @@ export default function Show({ auth, post, comments, community }: Props) {
                     </Button>
 
                     <div className="flex space-x-2">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setData({ shouldUpVote: !postState.isUpVoted })}
-                        >
-                            <div className="flex items-center space-x-1">
-                                <RiChatFollowUpFill
-                                    className={postState.isUpVoted ? 'text-primary' : 'text-gray-500'}
-                                />
-                                <span>{postState.votes}</span>
-                            </div>
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setData({ shouldUpVote: !postState.isUpVoted })}
-                        >
-                            <div className="flex items-center space-x-1">
-                                <FaThumbsUp
-                                    className={postState.isUpVoted ? 'text-primary' : 'text-gray-500'}
-                                />
-                                <span>{postState.votes}</span>
-                            </div>
-                        </Button>
+                        <FollowPost
+                            postId={post.id}
+                            initialIsFollowed={post.isFollowed}
+                        />
+                        <UpVote
+                            postId={post.id}
+                            initialVotes={post.votes}
+                            initialIsUpVoted={post.isUpVoted}
+                        />
                     </div>
                 </div>
             }

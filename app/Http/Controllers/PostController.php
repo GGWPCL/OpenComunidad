@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\FollowPostRequest;
 use App\Models\Category;
 use App\Http\Requests\UpVotePostRequest;
 use App\Models\Post;
@@ -59,6 +60,24 @@ class PostController extends Controller
         );
     }
 
+    public function follow(FollowPostRequest $request, Post $post)
+    {
+        $user = Auth::user();
+        if (!$user instanceof User) {
+            return redirect()->route('login');
+        }
+
+        $validated = $request->validated();
+        $shouldFollow = $validated['shouldFollow'];
+
+        $follow = $user->followPost($post, $shouldFollow);
+
+        return redirect()->back()->with(
+            'isFollowed',
+            (bool) $follow,
+        );
+    }
+
     public function show(Post $post)
     {
         $user = Auth::user();
@@ -71,6 +90,7 @@ class PostController extends Controller
             'author' => $post->author?->name,
             'votes' => (int) $post->upVotedBy()?->count(),
             'isUpVoted' => $user instanceof User && $user->upVotedPosts()?->where('post_id', $post->id)->exists(),
+            'isFollowed' => $user instanceof User && $user->followedPosts()?->where('post_id', $post->id)->exists(),
             'createdAt' => $post->created_at->diffForHumans()
         ];
 
