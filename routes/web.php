@@ -14,7 +14,9 @@ Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
-        'communities' => Community::all(),
+        'communities' => Community::with(['logo', 'banner'])->get()->each(function ($community) {
+            processMediaUrls($community);
+        }),
     ]);
 });
 

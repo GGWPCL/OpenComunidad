@@ -7,6 +7,12 @@ interface Community {
     name: string;
     address: string;
     slug: string;
+    logo?: {
+        url: string;
+    };
+    banner?: {
+        url: string;
+    };
 }
 
 export default function Welcome({
@@ -112,12 +118,29 @@ export default function Welcome({
                                 <a
                                     href={`/communities/${community.slug}`}
                                     key={index}
-                                    className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer block w-full"
+                                    className="group bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer block w-full"
                                 >
-                                    <div className="h-32 w-full bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 flex items-center justify-center">
-                                        <svg className="w-12 h-12 text-blue-500 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                        </svg>
+                                    <div className="h-32 w-full flex items-center justify-center relative">
+                                        {community.banner ? (
+                                            <img
+                                                src={community.banner.url}
+                                                alt={`${community.name} banner`}
+                                                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                                            />
+                                        ) : (
+                                            <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800" />
+                                        )}
+                                        {community.logo ? (
+                                            <img
+                                                src={community.logo.url}
+                                                alt={community.name}
+                                                className="w-20 h-20 rounded-full object-cover z-10 border-2 border-white shadow-md"
+                                            />
+                                        ) : (
+                                            <svg className="w-12 h-12 text-blue-500 dark:text-blue-400 z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                            </svg>
+                                        )}
                                     </div>
                                     <div className="p-4">
                                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
