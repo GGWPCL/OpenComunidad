@@ -7,6 +7,8 @@ import { Button } from '@/Components/ui/button';
 import { FaThumbsUp } from "react-icons/fa6";
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
+import { Sheet, SheetContent, SheetTrigger } from "@/Components/ui/sheet";
+import { ChevronDown } from "lucide-react";
 
 interface Post {
     id: number;
@@ -114,6 +116,31 @@ export default function Show({ community, auth, categories, posts }: Props) {
         }));
     };
 
+    const CategoryList = () => (
+        <div className="space-y-2 px-1">
+            <Button
+                key={undefined}
+                variant="ghost"
+                className={`w-full justify-start rounded-lg ${!currentCategory ? 'bg-primary/10 text-primary' : ''}`}
+                onClick={() => handleCategoryClick()}
+            >
+                <span className="mr-2">📋</span>
+                Todo
+            </Button>
+            {categories.map((category) => (
+                <Button
+                    key={category.internal_name}
+                    variant="ghost"
+                    className={`w-full justify-start rounded-lg ${category.internal_name === currentCategory ? 'bg-primary/10 text-primary' : ''}`}
+                    onClick={() => handleCategoryClick(category.internal_name)}
+                >
+                    <span className="mr-2">{category.icon}</span>
+                    {category.name}
+                </Button>
+            ))}
+        </div>
+    );
+
     return (
         <Layout
             header={
@@ -146,40 +173,40 @@ export default function Show({ community, auth, categories, posts }: Props) {
                 </div>
             )}
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="flex gap-6">
-                        {/* Sidebar */}
-                        <div className="w-64 shrink-0">
-                            <Card>
-                                <ScrollArea className="h-[calc(100vh-12rem)]">
-                                    <div className="p-4 space-y-2">
-                                        <Button
-                                            key={undefined}
-                                            variant="ghost"
-                                            className={`w-full justify-start ${!currentCategory
-                                                ? 'bg-primary/10 text-primary'
-                                                : ''
-                                                }`}
-                                            onClick={() => handleCategoryClick()}
-                                        >
-                                            <span className="mr-2">📋</span>
-                                            Todo
-                                        </Button>
-                                        {categories.map((category) => (
-                                            <Button
-                                                key={category.internal_name}
-                                                variant="ghost"
-                                                className={`w-full justify-start ${category.internal_name === currentCategory
-                                                    ? 'bg-primary/10 text-primary'
-                                                    : ''
-                                                    }`}
-                                                onClick={() => handleCategoryClick(category.internal_name)}
-                                            >
-                                                <span className="mr-2">{category.icon}</span>
-                                                {category.name}
-                                            </Button>
-                                        ))}
+            <div className="py-6 lg:py-12">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div className="flex flex-col lg:flex-row gap-6">
+                        {/* Mobile Categories Dropdown */}
+                        <div className="lg:hidden w-full">
+                            <Sheet>
+                                <SheetTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        className="w-full rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                                    >
+                                        <span className="flex-1">Categorías</span>
+                                        <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
+                                    </Button>
+                                </SheetTrigger>
+                                <SheetContent
+                                    side="top"
+                                    className="w-full px-4 sm:px-6"
+                                >
+                                    <div className="py-6">
+                                        <h3 className="text-lg font-semibold mb-4 px-1">Categorías</h3>
+                                        <CategoryList />
+                                    </div>
+                                </SheetContent>
+                            </Sheet>
+                        </div>
+
+                        {/* Desktop Sidebar */}
+                        <div className="hidden lg:block w-72 shrink-0">
+                            <Card className="sticky top-6">
+                                <ScrollArea className="h-[calc(100vh-12rem)] rounded-lg">
+                                    <div className="p-4">
+                                        <h3 className="text-lg font-semibold mb-4 px-1">Categorías</h3>
+                                        <CategoryList />
                                     </div>
                                 </ScrollArea>
                             </Card>
@@ -188,7 +215,7 @@ export default function Show({ community, auth, categories, posts }: Props) {
                         {/* Main Content */}
                         <div className="flex-1 space-y-4">
                             <Dialog open={showCategoryModal} onOpenChange={setShowCategoryModal}>
-                                <DialogContent className="sm:max-w-[600px]">
+                                <DialogContent className="sm:max-w-[600px] mx-4">
                                     <DialogHeader>
                                         <DialogTitle>Elige un tipo de publicación</DialogTitle>
                                     </DialogHeader>
@@ -210,7 +237,7 @@ export default function Show({ community, auth, categories, posts }: Props) {
                             </Dialog>
 
                             <Button
-                                className="w-full"
+                                className="w-full rounded-lg shadow-sm hover:shadow-md transition-shadow"
                                 onClick={() => setShowCategoryModal(true)}
                             >
                                 Crear nueva publicación
@@ -221,10 +248,8 @@ export default function Show({ community, auth, categories, posts }: Props) {
                                 {postsState.map((post) => (
                                     <Card
                                         key={post.id}
-                                        className="hover:shadow-md transition-shadow cursor-pointer"
-                                        onClick={() => router.visit(route('posts.show', {
-                                            post: post.id
-                                        }))}
+                                        className="hover:shadow-md transition-shadow cursor-pointer rounded-lg"
+                                        onClick={() => router.visit(route('posts.show', { post: post.id }))}
                                     >
                                         <CardContent className="p-6">
                                             <div className="flex gap-4">
@@ -242,12 +267,14 @@ export default function Show({ community, auth, categories, posts }: Props) {
                                                 </div>
 
                                                 <div className="flex-1">
-                                                    <div className="flex items-center space-x-2 text-sm text-gray-500 mb-2">
+                                                    <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500 mb-2">
                                                         <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs">
                                                             {post.category}
                                                         </span>
-                                                        <span>• {post.createdAt.charAt(0).toUpperCase() + post.createdAt.slice(1)}</span>
-                                                        <span>• Por un vecino de la comunidad</span>
+                                                        <span className="hidden sm:inline">•</span>
+                                                        <span>{post.createdAt.charAt(0).toUpperCase() + post.createdAt.slice(1)}</span>
+                                                        <span className="hidden sm:inline">•</span>
+                                                        <span className="w-full sm:w-auto">Por un vecino de la comunidad</span>
                                                     </div>
                                                     <h3 className="text-lg font-semibold mb-2">{post.title}</h3>
                                                     <p className="text-gray-600 mb-4">{post.content}</p>

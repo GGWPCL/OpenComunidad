@@ -4,9 +4,7 @@ import GuestLayout from '@/Layouts/GuestLayout';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardTitle } from '@/Components/ui/card';
 import { Label } from '@/Components/ui/label';
-import { FaThumbsUp } from "react-icons/fa6";
-import { RiChatFollowUpFill } from "react-icons/ri";
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Toolbar from './Toolbar';
@@ -198,4 +196,4 @@ export default function Show({ auth, post, comments, community }: Props) {
             </div>
         </Layout >
     );
-} 
+}
