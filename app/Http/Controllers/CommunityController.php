@@ -57,21 +57,21 @@ class CommunityController extends Controller
                 ->exists();
 
             $isAdmin = $community->users()
-            ->where('user_id', $user->id)
-            ->where('is_admin', true)
-            ->exists();
+                ->where('user_id', $user->id)
+                ->where('is_admin', true)
+                ->exists();
         }
 
         $categories = Category::select('display_name as name', 'internal_name', 'icon', 'description')->get();
         $selectedCategory = request()->query('category');
 
         $postsQuery = Post::where('community_id', $community->id);
-        
+
         // Show only approved posts for non-admins, plus user's own posts if logged in
         if (!$isAdmin) {
-            $postsQuery->where(function($query) use ($user) {
+            $postsQuery->where(function ($query) use ($user) {
                 $query->where('is_approved', true);
-                
+
                 if ($user) {
                     $query->orWhere('author_id', $user->id);
                 }
@@ -85,7 +85,8 @@ class CommunityController extends Controller
             });
         }
 
-        $posts = $postsQuery->get()
+        $posts = $postsQuery
+            ->orderBy('created_at', 'DESC')->get()
             ->map(function (Post $post) use ($user) {
                 return [
                     'id' => $post->id,

@@ -139,18 +139,7 @@ class PostController extends Controller
             'isFollowed' => $user instanceof User && $user->followedPosts()?->where('post_id', $post->id)->exists(),
             'createdAt' => $post->created_at->diffForHumans()
         ];
-        // {
-        //     question: "¿Qué día prefieren para la próxima reunión de vecinos?",
-        //     options: [
-        //         { id: 1, text: "Sábado por la mañana", votes: 12 },
-        //         { id: 2, text: "Sábado por la tarde", votes: 8 },
-        //         { id: 3, text: "Domingo por la mañana", votes: 15 },
-        //         { id: 4, text: "Domingo por la tarde", votes: 5 },
-        //     ],
-        //     total_votes: 40,
-        //     closed: false,
-        //     ends_at: "2024-11-30T23:59:59"
-        // };
+
         $pollData = null;
         if ($post->poll) {
             $pollData = [
