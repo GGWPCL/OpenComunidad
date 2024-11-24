@@ -21,7 +21,7 @@ export default function Welcome({
 }: PageProps<{ communities: Community[] }>) {
     return (
         <>
-            <Head title="Open Comunidad - Switch 345" />
+            <Head title="OpenComunidad - Platanus Hack 24" />
             <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800">
                 {/* Navigation */}
                 <nav className="fixed w-full bg-white/80 backdrop-blur-sm shadow-sm dark:bg-gray-900/80">

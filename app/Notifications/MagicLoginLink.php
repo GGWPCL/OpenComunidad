@@ -28,9 +28,9 @@ class MagicLoginLink extends Notification
             ->greeting($this->getGreeting());
 
         if ($this->isNewUser) {
-            $message->line('¡Bienvenido a Open Comunidad! Te damos la bienvenida a nuestra plataforma.')
+            $message->line('¡Bienvenido a OpenComunidad! Te damos la bienvenida a nuestra plataforma.')
                    ->line('Para comenzar a usar tu cuenta, simplemente haz clic en el botón de abajo.')
-                   ->line('En Open Comunidad podrás:')
+                   ->line('En OpenComunidad podrás:')
                    ->line('• Conectar con otros miembros')
                    ->line('• Participar en discusiones')
                    ->line('• Acceder a recursos exclusivos');
@@ -43,7 +43,7 @@ class MagicLoginLink extends Notification
             ->action('Iniciar Sesión', $this->url)
             ->line('⚠️ Este enlace expirará en ' . config('laravel-passwordless-login.login_route_expires') . ' minutos.')
             ->line('Si no solicitaste este enlace, puedes ignorar este correo de forma segura.')
-            ->salutation('¡Saludos del equipo de Open Comunidad!');
+            ->salutation('¡Saludos del equipo de OpenComunidad!');
     }
 
     private function getEmailSubject(): string

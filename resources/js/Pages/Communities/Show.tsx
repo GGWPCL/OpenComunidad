@@ -155,7 +155,7 @@ export default function Show({ community, auth, categories, posts }: Props) {
                 )
             }
         >
-            <Head title={`${community?.name || 'Comunidad'} - Open Comunidad`} />
+            <Head title={`${community?.name || 'Comunidad'} - OpenComunidad`} />
 
             {/* Guest warning banner */}
             {!auth.user && (
