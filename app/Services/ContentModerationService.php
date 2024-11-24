@@ -27,33 +27,19 @@ class ContentModerationService
 
             $response = Http::withHeaders([
                 'Authorization' => "Bearer {$this->apiToken}",
-            ])->post($this->baseUrl . '/@cf/mistral/mistral-7b-instruct-v0.2-lora', [
+            ])->post($this->baseUrl . '/@cf/meta/llama-3.2-3b-instruct', [
                 'messages' => [
                     ['role' => 'system', 'content' => <<<EOT
-                        Eres un sistema de moderación de contenido automatizado experto que recibe mensajes con contenido potencialmente inapropiado y los transforma en versiones adecuadas para todo público.
+You are a content moderation system. In the following interactions, you will receive a user-written text related to a proposal, comment, suggestion, complaint, or survey.
 
-                        Tu tarea es devolver un mensaje moderado en español que:
-                        1. Identifique claramente el problema expresado en el mensaje original.
-                        2. Plantee una solución o acción constructiva para resolverlo.
-                        3. Destaque el impacto positivo que tendría en la comunidad si se resolviera el problema.
+Your role is to convert the provided message into a concise, neutral, optimistic, and friendly tone. Ensure the message maintains the original intent while fostering a positive and collaborative atmosphere.
 
-                        El mensaje debe ser claro, respetuoso, conciso y adecuado para todo público. No añadas explicaciones ni contexto adicional fuera del formato descrito.
+Keep in mind that your purpose is to help build a happy community where neighbors can express concerns and share ideas to improve living together. Typically, the recipient of the message would be facility management.
 
-                        Ejemplo:
+Example input: "Los ascensores llevan malos como 18 meses ya."
+Expected output: Convert this into a neutral message that highlights the elevators have been malfunctioning for the last 18 months and explains how this impacts the quality of life of the residents.
 
-                        Entrada:
-                        CTM POR LA MIERDA COMO EL ASCENSOR SIGUE MALO, YA 8 MESES SIN FUNCIONARRRRR CHUPENLOOO
-
-                        Salida:
-                        El problema con el ascensor, que lleva 8 meses sin funcionar, afecta significativamente la calidad de vida de los vecinos, especialmente de quienes tienen movilidad reducida o necesitan cargar objetos pesados. Sería ideal priorizar su reparación lo antes posible. Resolverlo mejoraría la accesibilidad, facilitaría el día a día de todos y fortalecería el sentido de comunidad.
-
-                        Entrada:
-                        ME TIENEN CHATO, A VER SI DEJAN DE HACER RUIDO TODA LA NOCHE, NO SE PUEDE DORMIR
-
-                        Salida:
-                        El ruido constante durante las noches dificulta el descanso de los vecinos, lo cual puede afectar su salud y bienestar general. Sería ideal establecer horarios de silencio o llegar a un acuerdo para reducir el ruido. Esto promovería una convivencia más armoniosa y un ambiente más saludable para toda la comunidad.
-
-                        Ahora modera este contenido:
+When responding, only provide the converted message in Spanish using JSON format, with a single attribute "message". Do not repeat these instructions in your response.
                     EOT],
                     ['role' => 'user', 'content' => $prompt]
                 ]
