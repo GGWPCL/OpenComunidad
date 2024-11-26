@@ -18,12 +18,10 @@ use DateTime;
 
 class PostController extends Controller
 {
-    protected $contentModerationService;
 
-    public function __construct(ContentModerationService $contentModerationService)
-    {
-        $this->contentModerationService = $contentModerationService;
-    }
+    public function __construct(
+        private ContentModerationService $contentModerationService,
+    ) {}
 
     public function create(Request $request, string $community)
     {
@@ -63,9 +61,17 @@ class PostController extends Controller
         // Extract post data
         $postData = [
             'original_title' => $validated['original_title'],
-            'mutated_title' => $this->contentModerationService->moderateContent($validated['original_title'], 'title', $pollCategory->internal_name) ?? $validated['original_content'],
+            'mutated_title' => $this->contentModerationService->moderateContent(
+                $validated['original_title'],
+                ContentModerationService::INPUT_TYPE_TITLE,
+                $pollCategory->internal_name,
+            ),
             'original_content' => $validated['original_content'],
-            'mutated_content' => $this->contentModerationService->moderateContent($validated['original_content'], 'content', $pollCategory->internal_name) ?? $validated['original_content'],
+            'mutated_content' => $this->contentModerationService->moderateContent(
+                $validated['original_content'],
+                ContentModerationService::INPUT_TYPE_CONTENT,
+                $pollCategory->internal_name,
+            ),
             'category_id' => $validated['category_id'],
             'author_id' => $request->user()->id,
             'community_id' => Community::where('slug', $request->community)->firstOrFail()->id,
@@ -199,7 +205,11 @@ class PostController extends Controller
         $content = $request->input('content');
         $category = $request->input('category');
 
-        $result = $this->contentModerationService->preflight($content, 'content', $category);
+        $result = $this->contentModerationService->preflight(
+            $content,
+            ContentModerationService::INPUT_TYPE_CONTENT,
+            $category,
+        );
 
         if (!$result) {
             return response()->json([

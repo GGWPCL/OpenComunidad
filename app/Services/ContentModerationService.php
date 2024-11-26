@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Category;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use OpenAI\Laravel\Facades\OpenAI;
@@ -9,6 +10,11 @@ use OpenAI\Laravel\Facades\OpenAI;
 
 class ContentModerationService
 {
+    public const INPUT_TYPE_TITLE = 'title';
+    public const INPUT_TYPE_CONTENT = 'content';
+    public const INPUT_TYPE_POLL_OPTION = 'poll_option';
+    public const INPUT_TYPE_POLL_TITLE = 'poll_title';
+
     private string $apiToken;
     private string $accountId;
     private string $baseUrl;
@@ -20,28 +26,31 @@ class ContentModerationService
         $this->baseUrl = "https://api.cloudflare.com/client/v4/accounts/{$this->accountId}/ai/run";
     }
 
-    public function moderateContent(string $content, string $inputType = 'content', string $categoryName = 'proposals'): ?string
-    {
+    public function moderateContent(
+        string $content,
+        string $inputType,
+        string $categoryName,
+    ): ?string {
         Log::info("moderateContent(" . $content . ", " . $inputType . ', ' . $categoryName);
         try {
             // Dynamic input type description
             $inputTypeMessage = match ($inputType) {
-                'title' => 'The content provided is a post title. Keep it short as the post content will later explain everything. If its good enough as a executive email subject, keep it as it is.',
-                'content' => 'The content provided is a post content.',
-                'poll_option' => 'The content provided is a poll option.',
-                'poll_title' => 'The content provided is a poll title. Keep it short, and it can be a question. If its clear enough, dont change it.',
+                self::INPUT_TYPE_TITLE => 'The content provided is a post title. Keep it short as the post content will later explain everything. If its good enough as a executive email subject, keep it as it is.',
+                self::INPUT_TYPE_CONTENT => 'The content provided is a post content.',
+                self::INPUT_TYPE_POLL_OPTION => 'The content provided is a poll option.',
+                self::INPUT_TYPE_POLL_TITLE => 'The content provided is a poll title. Keep it short, and it can be a question. If its clear enough, dont change it.',
                 default => 'The content provided is unspecified.',
             };
-    
+
             // Dynamic category description
             $categoryDescription = match ($categoryName) {
-                'proposals' => 'Share your improvement proposals and suggestions with the community.',
-                'poll' => 'Create polls to gather the community’s opinion.',
-                'imagine' => 'Share creative ideas to improve the community.',
-                'requests' => 'Raise a concern or situation that affects the community.',
+                Category::INTERNAL_NAME_PROPOSALS => 'Share your improvement proposals and suggestions with the community.',
+                Category::INTERNAL_NAME_POLLS => 'Create polls to gather the community’s opinion.',
+                Category::INTERNAL_NAME_IMAGINE => 'Share creative ideas to improve the community.',
+                Category::INTERNAL_NAME_REQUESTS => 'Raise a concern or situation that affects the community.',
                 default => 'Unspecified category.',
             };
-    
+
             // System prompt with dynamic input type and category descriptions
             $systemPrompt = <<<EOT
             Ensure that user posts are re-worded to maintain a concise, neutral, and constructive tone, while keeping the original meaning intact.
@@ -74,7 +83,7 @@ class ContentModerationService
             (Here, the message remains clear and conveys urgency, but does so in a diplomatic and constructive way.)
             
             EOT;
-    
+
             // Construct the messages array for GPT-4 Mini
             $messages = [
                 [
@@ -86,13 +95,13 @@ class ContentModerationService
                     'content' => $content,
                 ],
             ];
-    
+
             // Use the OpenAI PHP SDK to make the request
             $response = OpenAI::chat()->create([
                 'model' => 'gpt-4o-mini',
                 'messages' => $messages,
             ]);
-    
+
             // Extract the response message
             $result = data_get($response, 'choices.0.message.content');
             Log::info($result);
@@ -102,34 +111,37 @@ class ContentModerationService
                 'error' => $e->getMessage(),
                 'content' => $content,
             ]);
-    
+
             return null;
         }
     }
 
- public function preflight(string $content, string $inputType = 'content', string $categoryName = 'proposals'): ?string
-{
-    try {
-        // Dynamic input type description
-        $inputTypeMessage = match ($inputType) {
-            'title' => 'The content provided is a post title. It should make sense for the chosen category.',
-            'content' => 'The content provided is a post content. It should be related to the category that was chosen, and include enough details to be able to later transform this answer to a constructive, neutral and positive communication style.',
-            'poll_option' => 'The content provided is a poll option. It can be a single word, or few words.',
-            'poll_title' => 'The content provided is a poll title. It should be concise, clear, and may be phrased as a question.',
-            default => 'The content provided is unspecified.',
-        };
+    public function preflight(
+        string $content,
+        string $inputType,
+        string $categoryName,
+    ): ?string {
+        try {
+            // Dynamic input type description
+            $inputTypeMessage = match ($inputType) {
+                self::INPUT_TYPE_TITLE => 'The content provided is a post title. It should make sense for the chosen category.',
+                self::INPUT_TYPE_CONTENT => 'The content provided is a post content. It should be related to the category that was chosen, and include enough details to be able to later transform this answer to a constructive, neutral and positive communication style.',
+                self::INPUT_TYPE_POLL_OPTION => 'The content provided is a poll option. It can be a single word, or few words.',
+                self::INPUT_TYPE_TITLE => 'The content provided is a poll title. It should be concise, clear, and may be phrased as a question.',
+                default => 'The content provided is unspecified.',
+            };
 
-        // Dynamic category description
-        $categoryDescription = match ($categoryName) {
-            'proposals' => 'Share your improvement proposals and suggestions with the community.',
-            'poll' => 'Create polls to gather the community’s opinion.',
-            'imagine' => 'Share creative ideas to improve the community.',
-            'requests' => 'Raise a concern or situation that affects the community.',
-            default => 'Unspecified category.',
-        };
+            // Dynamic category description
+            $categoryDescription = match ($categoryName) {
+                Category::INTERNAL_NAME_PROPOSALS => 'Share your improvement proposals and suggestions with the community.',
+                Category::INTERNAL_NAME_POLLS => 'Create polls to gather the community’s opinion.',
+                Category::INTERNAL_NAME_IMAGINE => 'Share creative ideas to improve the community.',
+                Category::INTERNAL_NAME_REQUESTS => 'Raise a concern or situation that affects the community.',
+                default => 'Unspecified category.',
+            };
 
-        // System prompt with dynamic input type and category descriptions
-        $systemPrompt = <<<EOT
+            // System prompt with dynamic input type and category descriptions
+            $systemPrompt = <<<EOT
         You are a content moderation system. In the following interactions, you will receive a user-written text related to a proposal, comment, suggestion, complaint, or survey.
 
         Your role is to analyze the provided message and determine if it has enough information to be considered a valid candidate for a proposal, suggestion, or poll.
@@ -155,54 +167,54 @@ class ContentModerationService
         }
         EOT;
 
-        // Construct the messages array for GPT
-        $messages = [
-            [
-                'role' => 'system',
-                'content' => $systemPrompt,
-            ],
-            [
-                'role' => 'user',
+            // Construct the messages array for GPT
+            $messages = [
+                [
+                    'role' => 'system',
+                    'content' => $systemPrompt,
+                ],
+                [
+                    'role' => 'user',
+                    'content' => $content,
+                ],
+            ];
+
+            // Use the OpenAI PHP SDK to send the request
+            $response = OpenAI::chat()->create([
+                'model' => 'gpt-4o-mini',
+                'messages' => $messages,
+            ]);
+
+            // Extract the response message
+            $result = data_get($response, 'choices.0.message.content');
+
+            // Decode and validate the JSON structured output
+            $decodedResult = json_decode($result, true, 512, JSON_THROW_ON_ERROR);
+
+            if (isset($decodedResult['ready']) && isset($decodedResult['message'])) {
+                return json_encode($decodedResult, JSON_THROW_ON_ERROR);
+            }
+
+            Log::error('Invalid response structure from OpenAI', [
+                'response' => $result,
                 'content' => $content,
-            ],
-        ];
+            ]);
 
-        // Use the OpenAI PHP SDK to send the request
-        $response = OpenAI::chat()->create([
-            'model' => 'gpt-4o-mini',
-            'messages' => $messages,
-        ]);
+            return null;
+        } catch (\JsonException $e) {
+            Log::error('JSON parsing error', [
+                'error' => $e->getMessage(),
+                'content' => $content,
+            ]);
 
-        // Extract the response message
-        $result = data_get($response, 'choices.0.message.content');
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Content moderation error', [
+                'error' => $e->getMessage(),
+                'content' => $content,
+            ]);
 
-        // Decode and validate the JSON structured output
-        $decodedResult = json_decode($result, true, 512, JSON_THROW_ON_ERROR);
-
-        if (isset($decodedResult['ready']) && isset($decodedResult['message'])) {
-            return json_encode($decodedResult, JSON_THROW_ON_ERROR);
+            return null;
         }
-
-        Log::error('Invalid response structure from OpenAI', [
-            'response' => $result,
-            'content' => $content,
-        ]);
-
-        return null;
-    } catch (\JsonException $e) {
-        Log::error('JSON parsing error', [
-            'error' => $e->getMessage(),
-            'content' => $content,
-        ]);
-
-        return null;
-    } catch (\Exception $e) {
-        Log::error('Content moderation error', [
-            'error' => $e->getMessage(),
-            'content' => $content,
-        ]);
-
-        return null;
     }
-}
 }

@@ -6,9 +6,14 @@ use App\Http\Requests\StoreCommentRequest;
 use App\Http\Requests\UpdateCommentRequest;
 use App\Models\Comment;
 use App\Models\Post;
+use App\Services\ContentModerationService;
 
 class CommentController extends Controller
 {
+
+    public function __construct(
+        private ContentModerationService $contentModerationService,
+    ) {}
     /**
      * Display a listing of the resource.
      */
@@ -31,11 +36,15 @@ class CommentController extends Controller
     public function store(StoreCommentRequest $request, Post $post)
     {
         $validated = $request->validated();
-        $validated['mutated_content'] = $validated['original_content'];
+        $validated['mutated_content'] = $this->contentModerationService->moderateContent(
+            $validated['original_content'],
+            ContentModerationService::INPUT_TYPE_CONTENT,
+            $post->category->internal_name,
+        );
         $validated['author_id'] = $request->user()->id;
         $validated['post_id'] = $post->id;
 
-        $comment = Comment::create($validated);
+        Comment::create($validated);
 
         return redirect()->back();
     }

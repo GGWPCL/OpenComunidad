@@ -11,6 +11,7 @@ class Category extends Model
     public const INTERNAL_NAME_PROPOSALS = 'proposals';
     public const INTERNAL_NAME_POLLS = 'polls';
     public const INTERNAL_NAME_IMAGINE = 'imagine';
+    public const INTERNAL_NAME_REQUESTS = 'requests';
 
     /** @use HasFactory<\Database\Factories\CategoryFactory> */
     use HasFactory;
