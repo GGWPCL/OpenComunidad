@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\PostUpdated;
 use App\Http\Requests\StoreCommentRequest;
 use App\Http\Requests\UpdateCommentRequest;
 use App\Models\Comment;
@@ -45,6 +46,7 @@ class CommentController extends Controller
         $validated['post_id'] = $post->id;
 
         Comment::create($validated);
+        PostUpdated::dispatch(PostUpdated::TYPE_POST_COMMENTED, $post);
 
         return redirect()->back();
     }

@@ -15,16 +15,8 @@ class ContentModerationService
     public const INPUT_TYPE_POLL_OPTION = 'poll_option';
     public const INPUT_TYPE_POLL_TITLE = 'poll_title';
 
-    private string $apiToken;
-    private string $accountId;
-    private string $baseUrl;
 
-    public function __construct()
-    {
-        $this->apiToken = config('services.cloudflare.ai_token');
-        $this->accountId = config('services.cloudflare.account_id');
-        $this->baseUrl = "https://api.cloudflare.com/client/v4/accounts/{$this->accountId}/ai/run";
-    }
+    public function __construct() {}
 
     public function moderateContent(
         string $content,
