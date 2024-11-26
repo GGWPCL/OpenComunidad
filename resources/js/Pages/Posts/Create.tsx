@@ -23,7 +23,7 @@ interface Category {
 
 export default function Create({ categories }: { categories: Category[] }) {
 
-    const [selectedCategory] = useState(() => {
+    const [selectedCategoryId] = useState(() => {
         const params = new URLSearchParams(window.location.search);
         const category = params.get('category');
 
@@ -40,6 +40,11 @@ export default function Create({ categories }: { categories: Category[] }) {
         }
 
         return categoryMap[category].toString();
+    });
+
+    const [selectedCategory] = useState(() => {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('category');
     });
 
     const editor = useEditor({
@@ -59,7 +64,7 @@ export default function Create({ categories }: { categories: Category[] }) {
     const { data, setData, post, processing, errors } = useForm({
         original_title: '',
         original_content: '',
-        category_id: selectedCategory,
+        category_id: selectedCategoryId,
         has_poll: false,
         poll_question: '',
         poll_options: ['', ''],
@@ -84,6 +89,7 @@ export default function Create({ categories }: { categories: Category[] }) {
             const response = await axios.post(route('posts.preflight'), {
                 title: data.original_title,
                 content: data.original_content,
+                category: selectedCategory
             });
 
             const result = response.data;
@@ -119,7 +125,7 @@ export default function Create({ categories }: { categories: Category[] }) {
 
     // Add rate limit function
     const startRateLimit = () => {
-        setCountdown(30); // 30 second cooldown
+        setCountdown(10); // 30 second cooldown
         const timer = setInterval(() => {
             setCountdown((prev) => {
                 if (prev <= 1) {
@@ -154,7 +160,7 @@ export default function Create({ categories }: { categories: Category[] }) {
 
     return (
         <AuthenticatedLayout
-            header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Crear nuevo post | {categories.find(category => category.id === parseInt(selectedCategory))?.display_name}</h2>}
+            header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Crear nuevo post | {categories.find(category => category.id === parseInt(selectedCategoryId))?.display_name}</h2>}
         >
             <Head title="Create Post" />
 
@@ -183,7 +189,7 @@ export default function Create({ categories }: { categories: Category[] }) {
                                     Categoría
                                 </Label>
                                 <Select
-                                    value={data.category_id || selectedCategory}
+                                    value={data.category_id || selectedCategoryId}
                                     onValueChange={(value) => setData('category_id', value)}
                                 >
                                     <SelectTrigger className="text-lg">
@@ -221,7 +227,7 @@ export default function Create({ categories }: { categories: Category[] }) {
                                     <p className="text-sm text-red-600">{errors.original_content}</p>
                                 )}
                             </div>
-                            {selectedCategory === '2' && (
+                            {selectedCategoryId === '2' && (
                                 <motion.div
                                     initial={{ opacity: 0, height: 0 }}
                                     animate={{ opacity: 1, height: 'auto' }}

@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use App\Services\ContentModerationService;
+use Illuminate\Support\Facades\Log;
 use DateTime;
 
 class PostController extends Controller
@@ -34,22 +35,37 @@ class PostController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'original_title' => 'required|string|max:255',
-            'original_content' => 'required|string',
-            'category_id' => 'required|exists:categories,id',
-            'poll_question' => 'required_if:category_id,2|string|max:255',
-            'poll_deadline' => 'required_if:category_id,2|date',
-            'poll_options' => 'required_if:category_id,2|array|min:2|max:6',
-            'poll_options.*' => 'required|string|max:255|distinct',
-        ]);
+        $pollCategory = Category::where('internal_name', Category::INTERNAL_NAME_POLLS)->first();
+        if ($pollCategory) {
+            $pollCategoryId = $pollCategory->id;
+
+            if ($request->input('category_id') == $pollCategoryId) {
+                $validated = $request->validate([
+                    'original_title' => 'required|string|max:255',
+                    'original_content' => 'required|string',
+                    'category_id' => 'required|exists:categories,id',
+                    'poll_question' => 'required_if:category_id,2|string|max:255',
+                    'poll_deadline' => 'required_if:category_id,2|date',
+                    'poll_options' => 'required_if:category_id,2|array|min:2|max:6',
+                    'poll_options.*' => 'required|string|max:255|distinct',
+                ]);
+            } else {
+                $validated = $request->validate([
+                    'original_title' => 'required|string|max:255',
+                    'original_content' => 'required|string',
+                    'category_id' => 'required|exists:categories,id',
+                ]);
+            }
+        } else {
+            return response()->json(['error' => 'Poll category not found.'], 422);
+        }
 
         // Extract post data
         $postData = [
             'original_title' => $validated['original_title'],
-            'mutated_title' => $validated['original_title'],
+            'mutated_title' => $this->contentModerationService->moderateContent($validated['original_title'], 'title', $pollCategory->internal_name) ?? $validated['original_content'],
             'original_content' => $validated['original_content'],
-            'mutated_content' => $validated['original_content'],
+            'mutated_content' => $this->contentModerationService->moderateContent($validated['original_content'], 'content', $pollCategory->internal_name) ?? $validated['original_content'],
             'category_id' => $validated['category_id'],
             'author_id' => $request->user()->id,
             'community_id' => Community::where('slug', $request->community)->firstOrFail()->id,
@@ -181,10 +197,9 @@ class PostController extends Controller
     public function preflight(Request $request)
     {
         $content = $request->input('content');
+        $category = $request->input('category');
 
-        $result = $this->contentModerationService->preflight($content);
-
-        logger()->info($result);
+        $result = $this->contentModerationService->preflight($content, 'content', $category);
 
         if (!$result) {
             return response()->json([
